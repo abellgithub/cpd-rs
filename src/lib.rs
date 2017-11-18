@@ -13,9 +13,9 @@ extern crate failure_derive;
 extern crate generic_array;
 extern crate nalgebra;
 
+pub mod normalize;
 pub mod rigid;
 pub mod utils;
-mod normalize;
 mod registration;
 mod run;
 mod runner;

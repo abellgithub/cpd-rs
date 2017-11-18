@@ -1,5 +1,7 @@
-use {Matrix, Normalize, Registration, Rigid, Run};
+use {Matrix, Normalize, Registration, Rigid, Run, UInt};
+use generic_array::ArrayLength;
 use nalgebra::DimName;
+use std::ops::Mul;
 
 /// Generic interface for running cpd registration methods.
 ///
@@ -102,14 +104,17 @@ impl Runner {
     /// ```
     pub fn run<D, R>(
         &self,
-        _fixed: &Matrix<D>,
-        _moving: &Matrix<D>,
+        fixed: &Matrix<D>,
+        moving: &Matrix<D>,
         _registration: R,
     ) -> (R::Transform, Run)
     where
-        D: DimName,
         R: Registration,
+        D: DimName,
+        <D as DimName>::Value: Mul + Mul<UInt>,
+        <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
+        let (_fixed, _moving, _normalization) = self.normalize.normalize(fixed, moving);
         unimplemented!()
     }
 }
