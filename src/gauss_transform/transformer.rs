@@ -90,5 +90,12 @@ mod tests {
         let moving = utils::matrix2_from_slice(&[2., 5., 4., 6.]);
         let probabilities = transformer.probabilities(&moving, 1.0);
         assert_relative_eq!(dvector(&[0.2085, 0.]), probabilities.p1, epsilon = 1e-4);
+        assert_relative_eq!(dvector(&[0.2085]), probabilities.pt1, epsilon = 1e-4);
+        assert_relative_eq!(
+            utils::matrix2_from_slice(&[0.2085, 0., 0.6256, 0.]),
+            probabilities.px,
+            epsilon = 1e-4
+        );
+        assert_relative_eq!(-0.5677, probabilities.error, epsilon = 1e-4);
     }
 }
