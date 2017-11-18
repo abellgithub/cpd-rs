@@ -20,9 +20,10 @@ mod registration;
 mod run;
 mod runner;
 
+pub use nalgebra::{U2, U3};
 pub use normalize::Normalize;
-pub use rigid::Rigid;
 pub use registration::Registration;
+pub use rigid::Rigid;
 pub use run::Run;
 pub use runner::Runner;
 

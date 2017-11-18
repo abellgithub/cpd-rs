@@ -1,4 +1,4 @@
-//! Builds rigid registrations.
+//! Run cpd's rigid registration.
 //!
 //! Rigid registrations calculate rotations, translations, and optionally scaling to align to point
 //! sets. To enable scaling, use the rigid builder:
@@ -90,14 +90,9 @@ impl Rigid {
     /// # Examples
     ///
     /// ```
-    /// # extern crate nalgebra;
-    /// # extern crate cpd;
-    /// # fn main() {
-    /// use cpd::Rigid;
-    /// use nalgebra::U2;
+    /// use cpd::{Rigid, U2};
     /// let rigid = Rigid::new();
     /// let registration = rigid.as_registration::<U2>().unwrap();
-    /// # }
     /// ```
     pub fn as_registration<'a, D>(
         &'a self,

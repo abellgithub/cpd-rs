@@ -36,14 +36,10 @@ where
     /// # Examples
     ///
     /// ```
-    /// # extern crate nalgebra;
-    /// # extern crate cpd;
-    /// # fn main() {
+    /// use cpd::U2;
     /// use cpd::rigid::{Rigid, Registration};
-    /// use nalgebra::U2;
     /// let rigid = Rigid::new();
     /// let registration = Registration::<U2>::new(&rigid).unwrap();
-    /// # }
     /// ```
     pub fn new(
         rigid: &'a Rigid,
