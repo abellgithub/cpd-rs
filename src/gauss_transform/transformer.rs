@@ -63,7 +63,12 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nalgebra::DVector;
     use utils;
+
+    fn dvector(slice: &[f64]) -> DVector<f64> {
+        DVector::from_iterator(slice.len(), slice.iter().map(|&n| n))
+    }
 
     #[test]
     fn invalid_outlier_weight() {
@@ -76,5 +81,14 @@ mod tests {
             InvalidOutlierWeight(1.1),
             Transformer::new(&matrix, 1.1).unwrap_err()
         );
+    }
+
+    #[test]
+    fn probabilities() {
+        let fixed = utils::matrix2_from_slice(&[1., 3.]);
+        let transformer = Transformer::new(&fixed, 0.1).unwrap();
+        let moving = utils::matrix2_from_slice(&[2., 5., 4., 6.]);
+        let probabilities = transformer.probabilities(&moving, 1.0);
+        assert_relative_eq!(dvector(&[0.2085, 0.]), probabilities.p1, epsilon = 1e-4);
     }
 }
