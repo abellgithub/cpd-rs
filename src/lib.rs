@@ -14,12 +14,15 @@ extern crate failure;
 #[macro_use]
 extern crate failure_derive;
 extern crate generic_array;
+#[macro_use]
+extern crate log;
 extern crate nalgebra;
 
 pub mod normalize;
 pub mod rigid;
 pub mod utils;
 mod iteration;
+mod probabilities;
 mod registration;
 mod run;
 mod runner;
@@ -27,6 +30,7 @@ mod runner;
 pub use iteration::Iteration;
 pub use nalgebra::{U2, U3};
 pub use normalize::Normalize;
+pub use probabilities::{InvalidOutlierWeight, Probabilities};
 pub use registration::Registration;
 pub use rigid::Rigid;
 pub use run::Run;

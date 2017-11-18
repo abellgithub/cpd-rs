@@ -31,6 +31,7 @@ pub use self::registration::{CannotNormalizeIndependentlyWithoutScale, Registrat
 pub use self::transform::Transform;
 
 use {Matrix, Run, Runner, UInt};
+use failure::Error;
 use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::ops::Mul;
@@ -121,7 +122,7 @@ impl Rigid {
         &self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
-    ) -> Result<(Transform<D>, Run), CannotNormalizeIndependentlyWithoutScale>
+    ) -> Result<(Transform<D>, Run), Error>
     where
         D: DimName,
         <D as DimName>::Value: Mul + Mul<UInt>,
@@ -129,7 +130,8 @@ impl Rigid {
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
         let registration = self.as_registration()?;
-        Ok(self.runner.run(fixed, moving, registration))
+        let tuple = self.runner.run(fixed, moving, registration)?;
+        Ok(tuple)
     }
 }
 

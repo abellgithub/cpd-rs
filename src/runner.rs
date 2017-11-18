@@ -1,4 +1,5 @@
-use {Iteration, Matrix, Normalize, Registration, Rigid, Run, UInt};
+use {InvalidOutlierWeight, Iteration, Matrix, Normalize, Probabilities, Registration, Rigid, Run,
+     UInt};
 use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::f64;
@@ -6,6 +7,7 @@ use std::ops::Mul;
 
 const DEFAULT_ERROR_CHANGE_THRESHOLD: f64 = 1e-5;
 const DEFAULT_MAX_ITERATIONS: usize = 150;
+const DEFAULT_OUTLIER_WEIGHT: f64 = 0.1;
 const DEFAULT_SIGMA2_THRESHOLD: f64 = f64::EPSILON * 10.;
 
 /// Generic interface for running cpd registration methods.
@@ -29,6 +31,7 @@ pub struct Runner {
     error_change_threshold: f64,
     max_iterations: usize,
     normalize: Normalize,
+    outlier_weight: f64,
     sigma2: Option<f64>,
     sigma2_threshold: f64,
 }
@@ -58,6 +61,8 @@ impl Runner {
         self.max_iterations = max_iterations;
         self
     }
+
+    // TODO add setters for outlier weight, sigma2, others
 
     /// Sets the normalization strategy.
     ///
@@ -114,8 +119,8 @@ impl Runner {
         &self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
-        _registration: R,
-    ) -> (R::Transform, Run)
+        registration: R,
+    ) -> Result<(R::Transform, Run), InvalidOutlierWeight>
     where
         R: Registration,
         D: DimName,
@@ -133,7 +138,22 @@ impl Runner {
         while iterations < self.max_iterations && self.error_change_threshold < error_change &&
             self.sigma2_threshold < iteration.sigma2
         {
-            break;
+            let probabilities = Probabilities::new(
+                &fixed,
+                &iteration.moved,
+                iteration.sigma2,
+                self.outlier_weight,
+            )?;
+            error_change = ((probabilities.error - error) / probabilities.error).abs();
+            info!(
+                "iterations={}, error_change={}, sigma2={}",
+                iterations,
+                error_change,
+                iteration.sigma2
+            );
+            error = probabilities.error;
+            iteration = registration.iterate(&fixed, &moving, &probabilities);
+            iterations += 1;
         }
         unimplemented!()
     }
@@ -145,6 +165,7 @@ impl Default for Runner {
             error_change_threshold: DEFAULT_ERROR_CHANGE_THRESHOLD,
             max_iterations: DEFAULT_MAX_ITERATIONS,
             normalize: Normalize::default(),
+            outlier_weight: DEFAULT_OUTLIER_WEIGHT,
             sigma2: None,
             sigma2_threshold: DEFAULT_SIGMA2_THRESHOLD,
         }
