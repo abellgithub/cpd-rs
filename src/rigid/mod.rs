@@ -141,3 +141,19 @@ impl From<Runner> for Rigid {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use {SquareMatrix, Vector, utils};
+    use nalgebra::U2;
+
+    #[test]
+    fn identity() {
+        let rigid = Rigid::new();
+        let matrix = utils::matrix2_from_slice(&[1., 2., 3., 4., 5., 6., 7., 8., 9., 10.]);
+        let (transform, run) = rigid.register(&matrix, &matrix).unwrap();
+        assert_relative_eq!(SquareMatrix::<U2>::identity(), transform.rotation);
+        assert_relative_eq!(Vector::<U2>::zeros(), transform.translation);
+    }
+}
