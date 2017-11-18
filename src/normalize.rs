@@ -103,6 +103,10 @@ impl Normalize {
     /// The other two change the matrices and return a structure that can be used to back-convert:
     ///
     /// ```
+    /// # #[macro_use]
+    /// # extern crate approx;
+    /// # extern crate cpd;
+    /// # fn main() {
     /// use cpd::{Normalize, utils};
     /// let fixed = utils::random_matrix2(10);
     /// let moving = utils::random_matrix2(10);
@@ -111,9 +115,10 @@ impl Normalize {
     /// let mut moving2 = moving2.to_mut();
     /// let normalization = normalization.unwrap();
     /// normalization.fixed.denormalize(&mut fixed2);
-    /// assert_eq!(fixed, *fixed2);
+    /// assert_relative_eq!(fixed, *fixed2);
     /// normalization.moving.denormalize(&mut moving2);
-    /// assert_eq!(moving, *moving2);
+    /// assert_relative_eq!(moving, *moving2);
+    /// # }
     /// ```
     pub fn normalize<'a, D>(
         &self,
@@ -242,8 +247,11 @@ where
     /// parameters.denormalize(&mut matrix2);
     /// assert_eq!(matrix, matrix2);
     /// ```
-    pub fn denormalize(&self, _matrix: &mut Matrix<D>) {
-        unimplemented!()
+    pub fn denormalize(&self, matrix: &mut Matrix<D>) {
+        *matrix *= self.scale;
+        for d in 0..D::dim() {
+            matrix.column_mut(d).add_scalar_mut(self.offset[d]);
+        }
     }
 }
 
