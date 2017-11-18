@@ -9,6 +9,7 @@ where
     D: DimName,
 {
     fixed: &'a Matrix<D>,
+    outlier_weight: f64,
 }
 
 impl<'a, D> Transformer<'a, D>
@@ -29,10 +30,17 @@ where
     /// assert!(Transformer::new(&matrix, 1.1).is_err());
     /// ```
     pub fn new(
-        _fixed: &'a Matrix<D>,
-        _outlier_weight: f64,
+        fixed: &'a Matrix<D>,
+        outlier_weight: f64,
     ) -> Result<Transformer<'a, D>, InvalidOutlierWeight> {
-        unimplemented!()
+        if outlier_weight < 0. || outlier_weight > 1. {
+            Err(InvalidOutlierWeight(outlier_weight))
+        } else {
+            Ok(Transformer {
+                fixed: fixed,
+                outlier_weight: outlier_weight,
+            })
+        }
     }
 
     /// Returns probabilities as calculated for these moving points and sigma2.
