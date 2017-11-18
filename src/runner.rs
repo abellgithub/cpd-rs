@@ -1,7 +1,12 @@
-use {Matrix, Normalize, Registration, Rigid, Run, UInt};
+use {Iteration, Matrix, Normalize, Registration, Rigid, Run, UInt};
 use generic_array::ArrayLength;
 use nalgebra::DimName;
+use std::f64;
 use std::ops::Mul;
+
+const DEFAULT_ERROR_CHANGE_THRESHOLD: f64 = 1e-5;
+const DEFAULT_MAX_ITERATIONS: usize = 150;
+const DEFAULT_SIGMA2_THRESHOLD: f64 = f64::EPSILON * 10.;
 
 /// Generic interface for running cpd registration methods.
 ///
@@ -19,10 +24,13 @@ use std::ops::Mul;
 /// use cpd::Runner;
 /// let runner = Runner::new().rigid();
 /// ```
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Copy, Debug)]
 pub struct Runner {
+    error_change_threshold: f64,
     max_iterations: usize,
     normalize: Normalize,
+    sigma2: Option<f64>,
+    sigma2_threshold: f64,
 }
 
 impl Runner {
@@ -115,6 +123,37 @@ impl Runner {
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
         let (_fixed, _moving, _normalization) = self.normalize.normalize(fixed, moving);
+        let mut error = 0.;
+        let mut error_change = f64::MAX;
+        let mut iterations = 0;
+        let mut iteration = Iteration {
+            moved: moving.clone(),
+            sigma2: self.sigma2.unwrap_or(default_sigma2(&fixed, &moving)),
+        };
+        while iterations < self.max_iterations && self.error_change_threshold < error_change &&
+            self.sigma2_threshold < iteration.sigma2
+        {
+            break;
+        }
         unimplemented!()
     }
+}
+
+impl Default for Runner {
+    fn default() -> Runner {
+        Runner {
+            error_change_threshold: DEFAULT_ERROR_CHANGE_THRESHOLD,
+            max_iterations: DEFAULT_MAX_ITERATIONS,
+            normalize: Normalize::default(),
+            sigma2: None,
+            sigma2_threshold: DEFAULT_SIGMA2_THRESHOLD,
+        }
+    }
+}
+
+fn default_sigma2<D>(fixed: &Matrix<D>, moving: &Matrix<D>) -> f64
+where
+    D: DimName,
+{
+    unimplemented!()
 }

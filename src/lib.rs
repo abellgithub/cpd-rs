@@ -19,10 +19,12 @@ extern crate nalgebra;
 pub mod normalize;
 pub mod rigid;
 pub mod utils;
+mod iteration;
 mod registration;
 mod run;
 mod runner;
 
+pub use iteration::Iteration;
 pub use nalgebra::{U2, U3};
 pub use normalize::Normalize;
 pub use registration::Registration;
