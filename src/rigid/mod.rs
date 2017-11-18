@@ -1,5 +1,33 @@
+//! Builds rigid registrations.
+//!
+//! Rigid registrations calculate rotations, translations, and optionally scaling to align to point
+//! sets. To enable scaling, use the rigid builder:
+//!
+//! ```
+//! use cpd::Rigid;
+//! let rigid = Rigid::new().scale(true);
+//! ```
+//!
+//! The rigid algorithm can check for reflections and prevent them from happening, which is the
+//! default behavior. You must explicitly allow reflections:
+//!
+//! ```
+//! use cpd::Rigid;
+//! let rigid = Rigid::new().allow_reflections(true);
+//! ```
+//!
+//! Use `register` to register two points sets:
+//!
+//! ```
+//! use cpd::{Rigid, utils};
+//! let matrix = utils::random_matrix2(10);
+//! let (transform, run) = Rigid::new().register(&matrix, &matrix).unwrap();
+//! ```
+
+mod registration;
 mod transform;
 
+pub use self::registration::{CannotNormalizeIndependentlyWithoutScale, Registration};
 pub use self::transform::Transform;
 
 use {Matrix, Run, Runner, UInt};
@@ -7,36 +35,7 @@ use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::ops::Mul;
 
-/// An error that is returned when asked to normalize independenty without scaling.
-#[derive(Clone, Copy, Debug, Fail)]
-#[fail(display = "Cannot use Normalize::Independent without rigid scaling")]
-pub struct CannotNormalizeIndependentlyWithoutScale {}
-
-/// Builds rigid registrations.
-///
-/// Rigid registrations calculate rotations, translations, and optionally scaling to align to point
-/// sets. To enable scaling, use the rigid builder:
-///
-/// ```
-/// use cpd::Rigid;
-/// let rigid = Rigid::new().scale(true);
-/// ```
-///
-/// The rigid algorithm can check for reflections and prevent them from happening, which is the
-/// default behavior. You must explicitly allow reflections:
-///
-/// ```
-/// use cpd::Rigid;
-/// let rigid = Rigid::new().allow_reflections(true);
-/// ```
-///
-/// Use `register` to register two points sets:
-///
-/// ```
-/// use cpd::{Rigid, utils};
-/// let matrix = utils::random_matrix2(10);
-/// let (transform, run) = Rigid::new().register(&matrix, &matrix).unwrap();
-/// ```
+/// The builder for rigid registrations.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rigid {
     allow_reflections: bool,
@@ -83,6 +82,24 @@ impl Rigid {
         self
     }
 
+    /// Returns a registration object, which can be used with a `Runner` to run this registration.
+    ///
+    /// Returns an error if the registration cannot be created, e.g. if the normalization is
+    /// independent but scaling is disabled.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::Rigid;
+    /// let rigid = Rigid::new();
+    /// let registration = rigid.as_registration().unwrap();
+    /// ```
+    pub fn as_registration<'a>(
+        &'a self,
+    ) -> Result<Registration<'a>, CannotNormalizeIndependentlyWithoutScale> {
+        Registration::new(self)
+    }
+
     /// Registers two matrices, returning the transform and information about the run.
     ///
     /// # Examples
@@ -105,9 +122,6 @@ impl Rigid {
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
-        if self.runner.requires_scaling() && !self.scale {
-            return Err(CannotNormalizeIndependentlyWithoutScale {});
-        }
         unimplemented!()
     }
 }
@@ -118,21 +132,5 @@ impl From<Runner> for Rigid {
             runner: runner,
             ..Default::default()
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use {Normalize, utils};
-
-    #[test]
-    fn normalize_independent_and_no_scale() {
-        let matrix = utils::random_matrix2(10);
-        let rigid = Runner::new()
-            .normalize(Normalize::Independent)
-            .rigid()
-            .scale(false);
-        assert!(rigid.register(&matrix, &matrix).is_err());
     }
 }
