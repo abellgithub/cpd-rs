@@ -125,7 +125,9 @@ impl Rigid {
     ) -> Result<(Transform<D>, Run), Error>
     where
         D: DimName,
+        UInt: Mul<<D as DimName>::Value>,
         <D as DimName>::Value: Mul + Mul<UInt>,
+        <UInt as Mul<<D as DimName>::Value>>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {

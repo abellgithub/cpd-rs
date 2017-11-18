@@ -44,6 +44,9 @@ pub type SquareMatrix<D> = nalgebra::MatrixN<f64, D>;
 /// Our custom vector type.
 pub type Vector<D> = nalgebra::VectorN<f64, D>;
 
+/// Our custom row vector type.
+pub type RowVector<D> = nalgebra::RowVectorN<f64, D>;
+
 /// Our UInt, used for matrix indexing.
 pub type UInt = generic_array::typenum::UInt<
     generic_array::typenum::UTerm,
