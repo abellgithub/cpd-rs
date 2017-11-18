@@ -90,13 +90,24 @@ impl Rigid {
     /// # Examples
     ///
     /// ```
+    /// # extern crate nalgebra;
+    /// # extern crate cpd;
+    /// # fn main() {
     /// use cpd::Rigid;
+    /// use nalgebra::U2;
     /// let rigid = Rigid::new();
-    /// let registration = rigid.as_registration().unwrap();
+    /// let registration = rigid.as_registration::<U2>().unwrap();
+    /// # }
     /// ```
-    pub fn as_registration<'a>(
+    pub fn as_registration<'a, D>(
         &'a self,
-    ) -> Result<Registration<'a>, CannotNormalizeIndependentlyWithoutScale> {
+    ) -> Result<Registration<'a, D>, CannotNormalizeIndependentlyWithoutScale>
+    where
+        D: DimName,
+        <D as DimName>::Value: Mul + Mul<UInt>,
+        <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
+        <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+    {
         Registration::new(self)
     }
 
@@ -113,8 +124,8 @@ impl Rigid {
     /// ```
     pub fn register<D>(
         &self,
-        _fixed: &Matrix<D>,
-        _moving: &Matrix<D>,
+        fixed: &Matrix<D>,
+        moving: &Matrix<D>,
     ) -> Result<(Transform<D>, Run), CannotNormalizeIndependentlyWithoutScale>
     where
         D: DimName,
@@ -122,7 +133,8 @@ impl Rigid {
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
-        unimplemented!()
+        let registration = self.as_registration()?;
+        Ok(self.runner.run(fixed, moving, registration))
     }
 }
 

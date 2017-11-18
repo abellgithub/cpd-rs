@@ -1,4 +1,8 @@
 use super::Rigid;
+use {SquareMatrix, UInt, Vector};
+use generic_array::ArrayLength;
+use nalgebra::DimName;
+use std::ops::Mul;
 
 /// An error that is returned when asked to normalize independenty without scaling.
 #[derive(Clone, Copy, Debug, Fail)]
@@ -7,35 +11,71 @@ pub struct CannotNormalizeIndependentlyWithoutScale {}
 
 /// A `Registration` for running rigid registrations.
 #[derive(Debug)]
-pub struct Registration<'a> {
+pub struct Registration<'a, D>
+where
+    D: DimName,
+    <D as DimName>::Value: Mul + Mul<UInt>,
+    <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
+    <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+{
     rigid: &'a Rigid,
+    rotation: SquareMatrix<D>,
+    scale: f64,
+    translation: Vector<D>,
 }
 
-impl<'a> Registration<'a> {
+impl<'a, D> Registration<'a, D>
+where
+    D: DimName,
+    <D as DimName>::Value: Mul + Mul<UInt>,
+    <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
+    <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+{
     /// Creates an new registration from a rigid.
     ///
     /// # Examples
     ///
     /// ```
+    /// # extern crate nalgebra;
+    /// # extern crate cpd;
+    /// # fn main() {
     /// use cpd::rigid::{Rigid, Registration};
+    /// use nalgebra::U2;
     /// let rigid = Rigid::new();
-    /// let registration = Registration::new(&rigid).unwrap();
+    /// let registration = Registration::<U2>::new(&rigid).unwrap();
+    /// # }
     /// ```
     pub fn new(
         rigid: &'a Rigid,
-    ) -> Result<Registration<'a>, CannotNormalizeIndependentlyWithoutScale> {
+    ) -> Result<Registration<'a, D>, CannotNormalizeIndependentlyWithoutScale> {
         if rigid.runner.requires_scaling() && !rigid.scale {
             Err(CannotNormalizeIndependentlyWithoutScale {})
         } else {
-            Ok(Registration { rigid: rigid })
+            Ok(Registration {
+                rigid: rigid,
+                rotation: SquareMatrix::<D>::identity(),
+                scale: 1.0,
+                translation: Vector::<D>::zeros(),
+            })
         }
     }
+}
+
+impl<'a, D> ::Registration for Registration<'a, D>
+where
+    D: DimName,
+    <D as DimName>::Value: Mul + Mul<UInt>,
+    <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
+    <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+{
+    type Transform = ::rigid::Transform<D>;
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use {Normalize, Runner};
+    use nalgebra::U2;
 
     #[test]
     fn normalize_independent_and_no_scale() {
@@ -43,6 +83,6 @@ mod tests {
             .normalize(Normalize::Independent)
             .rigid()
             .scale(false);
-        assert!(Registration::new(&rigid).is_err());
+        assert!(Registration::<U2>::new(&rigid).is_err());
     }
 }

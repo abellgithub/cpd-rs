@@ -16,11 +16,13 @@ extern crate nalgebra;
 pub mod rigid;
 pub mod utils;
 mod normalize;
+mod registration;
 mod run;
 mod runner;
 
 pub use normalize::Normalize;
 pub use rigid::Rigid;
+pub use registration::Registration;
 pub use run::Run;
 pub use runner::Runner;
 

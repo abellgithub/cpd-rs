@@ -1,4 +1,5 @@
-use {Normalize, Rigid};
+use {Matrix, Normalize, Registration, Rigid, Run};
+use nalgebra::DimName;
 
 /// Generic interface for running cpd registration methods.
 ///
@@ -84,5 +85,36 @@ impl Runner {
     /// ```
     pub fn rigid(self) -> Rigid {
         self.into()
+    }
+
+    /// Runs a `Registration`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # extern crate nalgebra;
+    /// # extern crate cpd;
+    /// # fn main() {
+    /// use cpd::{Runner, Rigid, utils};
+    /// use nalgebra::U2;
+    ///
+    /// let runner = Runner::new();
+    /// let rigid = Rigid::new();
+    /// let registration = rigid.as_registration::<U2>().unwrap();
+    /// let matrix = utils::random_matrix2(10);
+    /// let (transform, run) = runner.run(&matrix, &matrix, registration);
+    /// # }
+    /// ```
+    pub fn run<D, R>(
+        &self,
+        _fixed: &Matrix<D>,
+        _moving: &Matrix<D>,
+        _registration: R,
+    ) -> (R::Transform, Run)
+    where
+        D: DimName,
+        R: Registration,
+    {
+        unimplemented!()
     }
 }
