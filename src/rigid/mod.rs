@@ -150,6 +150,7 @@ mod tests {
     use {SquareMatrix, Vector, utils};
     use nalgebra::U2;
 
+    // TODO test for each normalization
     #[test]
     fn identity() {
         let rigid = Rigid::new();

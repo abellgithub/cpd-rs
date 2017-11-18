@@ -1,4 +1,5 @@
-use {Iteration, Matrix, Probabilities};
+use {Iteration, Matrix};
+use gauss_transform::Probabilities;
 use nalgebra::DimName;
 
 /// A trait for all structures that can be registered by a runner.

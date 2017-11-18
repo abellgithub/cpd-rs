@@ -1,5 +1,6 @@
 use super::Rigid;
-use {Iteration, Matrix, Probabilities, SquareMatrix, UInt, Vector};
+use {Iteration, Matrix, SquareMatrix, UInt, Vector};
+use gauss_transform::Probabilities;
 use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::ops::Mul;

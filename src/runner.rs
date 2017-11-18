@@ -1,5 +1,6 @@
-use {InvalidOutlierWeight, Iteration, Matrix, Normalize, Probabilities, Registration, Rigid, Run,
-     UInt};
+use {Iteration, Matrix, Normalize, Registration, Rigid, Run, UInt};
+use failure::Error;
+use gauss_transform::Transformer;
 use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::f64;
@@ -120,7 +121,7 @@ impl Runner {
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
         mut registration: R,
-    ) -> Result<(R::Transform, Run), InvalidOutlierWeight>
+    ) -> Result<(R::Transform, Run), Error>
     where
         R: Registration<D>,
         D: DimName,
@@ -135,15 +136,12 @@ impl Runner {
             moved: moving.clone(),
             sigma2: self.sigma2.unwrap_or(default_sigma2(&fixed, &moving)),
         };
+        let transformer = Transformer::new(&fixed, self.outlier_weight)?;
         while iterations < self.max_iterations && self.error_change_threshold < error_change &&
             self.sigma2_threshold < iteration.sigma2
         {
-            let probabilities = Probabilities::new(
-                &fixed,
-                &iteration.moved,
-                iteration.sigma2,
-                self.outlier_weight,
-            )?;
+            // TODO moved could be a reference?
+            let probabilities = transformer.probabilities(&iteration.moved, iteration.sigma2);
             error_change = ((probabilities.error - error) / probabilities.error).abs();
             info!(
                 "iterations={}, error_change={}, sigma2={}",
