@@ -55,8 +55,51 @@ where
     /// let moving = utils::random_matrix2(10);
     /// let probabilities = transformer.probabilities(&moving, 1.0);
     /// ```
-    pub fn probabilities(&self, _moving: &Matrix<D>, _sigma2: f64) -> Probabilities<D> {
-        unimplemented!()
+    pub fn probabilities(&self, moving: &Matrix<D>, sigma2: f64) -> Probabilities<D> {
+        use nalgebra::DVector;
+        use std::f64::consts::PI;
+
+        let fixed_nrows = self.fixed.nrows() as f64;
+        let moving_nrows = moving.nrows() as f64;
+        let ksig = -2.0 * sigma2;
+        let outliers = (self.outlier_weight * moving_nrows *
+                            (-ksig * PI).powf(0.5 * D::dim() as f64)) /
+            ((1. - self.outlier_weight) * fixed_nrows);
+
+        let mut p = DVector::<f64>::zeros(moving.nrows());
+        let mut p1 = DVector::<f64>::zeros(moving.nrows());
+        let mut pt1 = DVector::<f64>::zeros(self.fixed.nrows());
+        let mut px = Matrix::<D>::zeros(moving.nrows());
+        let mut error = 0.;
+
+        for n in 0..self.fixed.nrows() {
+            let mut sp = 0.;
+            for m in 0..moving.nrows() {
+                let norm: f64 = self.fixed
+                    .row(n)
+                    .iter()
+                    .zip(moving.row(m).iter())
+                    .map(|(&a, &b)| (a - b).powi(2))
+                    .sum();
+                p[m] = (norm / ksig).exp();
+                sp += p[m];
+            }
+            sp += outliers;
+            pt1[n] = 1. - outliers / sp;
+            p1 += &p / sp;
+            for d in 0..D::dim() {
+                let mut column = px.column_mut(d);
+                column += (self.fixed[(n, d)] / sp) * &p;
+            }
+            error += -sp.ln();
+        }
+        error += D::dim() as f64 * fixed_nrows * sigma2.ln() / 2.;
+        Probabilities {
+            p1: p1,
+            pt1: pt1,
+            px: px,
+            error: error,
+        }
     }
 }
 

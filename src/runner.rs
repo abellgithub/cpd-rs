@@ -140,7 +140,6 @@ impl Runner {
         while iterations < self.max_iterations && self.error_change_threshold < error_change &&
             self.sigma2_threshold < iteration.sigma2
         {
-            // TODO moved could be a reference?
             let probabilities = transformer.probabilities(&iteration.moved, iteration.sigma2);
             error_change = ((probabilities.error - error) / probabilities.error).abs();
             info!(
