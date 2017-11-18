@@ -14,10 +14,12 @@ extern crate generic_array;
 extern crate nalgebra;
 
 pub mod utils;
+mod normalize;
 mod rigid;
 mod run;
 mod runner;
 
+pub use normalize::Normalize;
 pub use rigid::Rigid;
 pub use run::Run;
 pub use runner::Runner;

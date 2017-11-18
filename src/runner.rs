@@ -1,4 +1,4 @@
-use Rigid;
+use {Normalize, Rigid};
 
 /// Generic interface for running cpd registration methods.
 ///
@@ -19,6 +19,7 @@ use Rigid;
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Runner {
     max_iterations: usize,
+    normalize: Normalize,
 }
 
 impl Runner {
@@ -45,6 +46,32 @@ impl Runner {
     pub fn max_iterations(mut self, max_iterations: usize) -> Runner {
         self.max_iterations = max_iterations;
         self
+    }
+
+    /// Sets the normalization strategy.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::{Normalize, Runner};
+    /// let runner = Runner::new().normalize(Normalize::Independent);
+    /// ```
+    pub fn normalize(mut self, normalize: Normalize) -> Runner {
+        self.normalize = normalize;
+        self
+    }
+
+    /// Returns true if this runner requires scaling, usually because of the normalization.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::{Normalize, Runner};
+    /// assert!(Runner::new().normalize(Normalize::Independent).requires_scaling());
+    /// assert!(!Runner::new().normalize(Normalize::SameScale).requires_scaling());
+    /// ```
+    pub fn requires_scaling(&self) -> bool {
+        self.normalize.requires_scaling()
     }
 
     /// Returns a rigid registration builder that will use this runner.

@@ -105,6 +105,9 @@ impl Rigid {
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
+        if self.runner.requires_scaling() && !self.scale {
+            return Err(CannotNormalizeIndependentlyWithoutScale {});
+        }
         unimplemented!()
     }
 }
@@ -115,5 +118,21 @@ impl From<Runner> for Rigid {
             runner: runner,
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use {Normalize, utils};
+
+    #[test]
+    fn normalize_independent_and_no_scale() {
+        let matrix = utils::random_matrix2(10);
+        let rigid = Runner::new()
+            .normalize(Normalize::Independent)
+            .rigid()
+            .scale(false);
+        assert!(rigid.register(&matrix, &matrix).is_err());
     }
 }
