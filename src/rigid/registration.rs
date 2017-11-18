@@ -1,5 +1,5 @@
 use super::Rigid;
-use {SquareMatrix, UInt, Vector};
+use {Iteration, Matrix, Probabilities, SquareMatrix, UInt, Vector};
 use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::ops::Mul;
@@ -57,7 +57,7 @@ where
     }
 }
 
-impl<'a, D> ::Registration for Registration<'a, D>
+impl<'a, D> ::Registration<D> for Registration<'a, D>
 where
     D: DimName,
     <D as DimName>::Value: Mul + Mul<UInt>,
@@ -65,6 +65,10 @@ where
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
 {
     type Transform = ::rigid::Transform<D>;
+
+    fn iterate(&mut self, _fixed: &Matrix<D>, _moving: &Matrix<D>, _probabilities: &Probabilities<D>) -> Iteration<D> {
+        unimplemented!()
+    }
 }
 
 #[cfg(test)]

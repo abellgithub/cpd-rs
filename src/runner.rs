@@ -119,10 +119,10 @@ impl Runner {
         &self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
-        registration: R,
+        mut registration: R,
     ) -> Result<(R::Transform, Run), InvalidOutlierWeight>
     where
-        R: Registration,
+        R: Registration<D>,
         D: DimName,
         <D as DimName>::Value: Mul + Mul<UInt>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
@@ -172,7 +172,7 @@ impl Default for Runner {
     }
 }
 
-fn default_sigma2<D>(fixed: &Matrix<D>, moving: &Matrix<D>) -> f64
+fn default_sigma2<D>(_fixed: &Matrix<D>, _moving: &Matrix<D>) -> f64
 where
     D: DimName,
 {

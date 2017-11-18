@@ -2,7 +2,7 @@ use Matrix;
 use nalgebra::{DVector, DimName};
 
 /// An error returned if the outlier weight is not between zero and one.
-#[derive(Debug, Fail)]
+#[derive(Clone, Copy, Debug, Fail, PartialEq)]
 #[fail(display = "Outlier weight is not between zero and one: {}", _0)]
 pub struct InvalidOutlierWeight(f64);
 
@@ -43,8 +43,27 @@ where
         _fixed: &Matrix<D>,
         _moving: &Matrix<D>,
         _sigma2: f64,
-        outlier_weight: f64,
+        _outlier_weight: f64,
     ) -> Result<Probabilities<D>, InvalidOutlierWeight> {
         unimplemented!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use utils;
+
+    #[test]
+    fn invalid_outlier_weight() {
+        let matrix = utils::random_matrix2(10);
+        assert_eq!(
+            InvalidOutlierWeight(-1.),
+            Probabilities::new(&matrix, &matrix, 1.0, -1.).unwrap_err()
+        );
+        assert_eq!(
+            InvalidOutlierWeight(1.1),
+            Probabilities::new(&matrix, &matrix, 1.0, 1.1).unwrap_err()
+        );
     }
 }

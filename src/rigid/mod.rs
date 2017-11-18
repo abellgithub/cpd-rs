@@ -155,6 +155,7 @@ mod tests {
         let rigid = Rigid::new();
         let matrix = utils::matrix2_from_slice(&[1., 2., 3., 4., 5., 6., 7., 8., 9., 10.]);
         let (transform, run) = rigid.register(&matrix, &matrix).unwrap();
+        assert!(run.converged);
         assert_relative_eq!(SquareMatrix::<U2>::identity(), transform.rotation);
         assert_relative_eq!(Vector::<U2>::zeros(), transform.translation);
     }
