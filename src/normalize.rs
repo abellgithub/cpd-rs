@@ -117,15 +117,32 @@ impl Normalize {
     /// ```
     pub fn normalize<'a, D>(
         &self,
-        _fixed: &'a Matrix<D>,
-        _moving: &'a Matrix<D>,
+        fixed: &'a Matrix<D>,
+        moving: &'a Matrix<D>,
     ) -> (Cow<'a, Matrix<D>>, Cow<'a, Matrix<D>>, Option<Normalization<D>>)
     where
         D: DimName,
         <D as DimName>::Value: Mul + Mul<UInt>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
-        unimplemented!()
+        match *self {
+            Normalize::Independent => {
+                let normalization = Normalization::new(fixed, moving);
+                let mut fixed = fixed.clone();
+                let mut moving = moving.clone();
+                normalization.normalize(&mut fixed, &mut moving);
+                (Cow::Owned(fixed), Cow::Owned(moving), Some(normalization))
+            }
+            Normalize::SameScale => {
+                let mut normalization = Normalization::new(fixed, moving);
+                normalization.set_scales_to_mean();
+                let mut fixed = fixed.clone();
+                let mut moving = moving.clone();
+                normalization.normalize(&mut fixed, &mut moving);
+                (Cow::Owned(fixed), Cow::Owned(moving), Some(normalization))
+            }
+            Normalize::None => (Cow::Borrowed(fixed), Cow::Borrowed(moving), None),
+        }
     }
 }
 
@@ -135,12 +152,83 @@ impl Default for Normalize {
     }
 }
 
+impl<D> Normalization<D>
+where
+    D: DimName,
+    <D as DimName>::Value: Mul + Mul<UInt>,
+    <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+{
+    fn new(fixed: &Matrix<D>, moving: &Matrix<D>) -> Normalization<D> {
+        Normalization {
+            fixed: Parameters::new(fixed),
+            moving: Parameters::new(moving),
+        }
+    }
+
+    fn set_scales_to_mean(&mut self) {
+        let scale = (self.fixed.scale + self.moving.scale) / 2.;
+        self.fixed.scale = scale;
+        self.moving.scale = scale;
+    }
+
+    fn normalize(&self, fixed: &mut Matrix<D>, moving: &mut Matrix<D>) {
+        self.fixed.normalize(fixed);
+        self.moving.normalize(moving);
+    }
+}
+
 impl<D> Parameters<D>
 where
     D: DimName,
     <D as DimName>::Value: Mul + Mul<UInt>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
 {
+    /// Creates new parameters from a matrix.
+    ///
+    /// # Examples
+    ///
+    ///
+    /// ```
+    /// use cpd::{utils};
+    /// use cpd::normalize::Parameters;
+    /// let matrix = utils::random_matrix2(10);
+    /// let parameters = Parameters::new(&matrix);
+    /// ```
+    pub fn new(matrix: &Matrix<D>) -> Parameters<D> {
+        let offset = Vector::<D>::from_iterator((0..D::dim()).map(|d| {
+            matrix.column(d).iter().sum::<f64>() / matrix.nrows() as f64
+        }));
+        let mut matrix = matrix.clone();
+        for d in 0..D::dim() {
+            matrix.column_mut(d).add_scalar_mut(-offset[d]);
+        }
+        let scale = (matrix.iter().map(|n| n.powi(2)).sum::<f64>() / matrix.nrows() as f64).sqrt();
+        Parameters {
+            offset: offset,
+            scale: scale,
+        }
+    }
+
+    /// Normalizes a matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::{U2, utils};
+    /// use cpd::normalize::Parameters;
+    /// let parameters = Parameters::<U2>::default();
+    /// let matrix = utils::random_matrix2(10);
+    /// let mut matrix2 = matrix.clone();
+    /// parameters.normalize(&mut matrix2);
+    /// assert_eq!(matrix, matrix2);
+    /// ```
+    pub fn normalize(&self, matrix: &mut Matrix<D>) {
+        for d in 0..D::dim() {
+            matrix.column_mut(d).add_scalar_mut(-self.offset[d]);
+        }
+        *matrix /= self.scale;
+    }
+
     /// Denormalizes a matrix.
     ///
     /// # Examples
@@ -170,5 +258,38 @@ where
             offset: Vector::<D>::zeros(),
             scale: 1.0,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use {U2, Vector, utils};
+
+    #[test]
+    fn parameters() {
+        let matrix = utils::matrix2_from_slice(&[1., 3., 2., 4.]);
+        let parameters = Parameters::new(&matrix);
+        assert_eq!(Vector::<U2>::new(2., 3.), parameters.offset);
+    }
+
+    #[test]
+    fn independent_different_scale() {
+        let fixed = utils::random_matrix2(10);
+        let moving = &fixed * 2.;
+        let (fixed, moving, normalization) = Normalize::Independent.normalize(&fixed, &moving);
+        assert_relative_eq!(*fixed, *moving);
+        let normalization = normalization.unwrap();
+        assert_relative_eq!(normalization.fixed.scale, normalization.moving.scale / 2.0);
+    }
+
+    #[test]
+    fn same_scale() {
+        let fixed = utils::random_matrix2(10);
+        let moving = &fixed * 2.;
+        let (fixed, moving, normalization) = Normalize::SameScale.normalize(&fixed, &moving);
+        assert!(*fixed != *moving);
+        let normalization = normalization.unwrap();
+        assert_relative_eq!(normalization.fixed.scale, normalization.moving.scale);
     }
 }

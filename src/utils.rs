@@ -17,3 +17,19 @@ pub fn random_matrix2(nrows: usize) -> Matrix<U2> {
     use nalgebra::U2;
     Matrix::<U2>::new_random(nrows)
 }
+
+/// Creates a 2-column matrix from a slice, column-major.
+///
+/// # Examples
+///
+/// ```
+/// use cpd::utils;
+/// let matrix = utils::matrix2_from_slice(&[1., 3., 2., 4.]);
+/// assert_eq!(2, matrix.nrows());
+/// assert_eq!(2, matrix.ncols());
+/// assert_eq!(3., matrix[(1, 0)]);
+/// assert_eq!(2., matrix[(0, 1)]);
+/// ```
+pub fn matrix2_from_slice(slice: &[f64]) -> Matrix<U2> {
+    Matrix::<U2>::from_iterator(slice.len() / 2, slice.iter().map(|&n| n))
+}

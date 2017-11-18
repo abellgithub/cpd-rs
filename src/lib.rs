@@ -7,6 +7,9 @@
         unstable_features,
         unused_import_braces, unused_qualifications)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
 extern crate failure;
 #[macro_use]
 extern crate failure_derive;
