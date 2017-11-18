@@ -7,10 +7,11 @@ authors = ["Pete Gadomski <pete.gadomski@gmail.com>"]
 alga = "0.5"
 csv = "1.0.0-beta"
 env_logger = "0.4"
+failure = "0.1"
+failure_derive = "0.1"
 generic-array = "0.8"
 log = "0.3"
 nalgebra = "0.13"
-quick-error = "1.2"
 serde = "1.0"
 
 [dev-dependencies]
