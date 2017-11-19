@@ -33,7 +33,8 @@ pub use self::transform::Transform;
 use {Matrix, Run, Runner, UInt};
 use failure::Error;
 use generic_array::ArrayLength;
-use nalgebra::DimName;
+use nalgebra::{DefaultAllocator, DimMin, DimName, DimSub, U1};
+use nalgebra::allocator::Allocator;
 use std::ops::Mul;
 
 /// The builder for rigid registrations.
@@ -124,12 +125,15 @@ impl Rigid {
         moving: &Matrix<D>,
     ) -> Result<(Transform<D>, Run), Error>
     where
-        D: DimName,
+        D: DimName + DimMin<D> + DimMin<D, Output = D> + DimSub<U1>,
         UInt: Mul<<D as DimName>::Value>,
-        <D as DimName>::Value: Mul + Mul<UInt>,
         <UInt as Mul<<D as DimName>::Value>>::Output: ArrayLength<f64>,
+        <D as DimName>::Value: Mul + Mul<UInt>,
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+        DefaultAllocator: Allocator<f64, D, D> +
+            Allocator<(usize, usize), D> +
+            Allocator<f64, <D as DimSub<U1>>::Output>,
     {
         let registration = self.as_registration()?;
         let tuple = self.runner.run(fixed, moving, registration)?;

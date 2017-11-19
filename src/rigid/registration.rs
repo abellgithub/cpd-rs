@@ -2,7 +2,8 @@ use super::Rigid;
 use {Iteration, Matrix, SquareMatrix, UInt, Vector};
 use gauss_transform::Probabilities;
 use generic_array::ArrayLength;
-use nalgebra::DimName;
+use nalgebra::{DefaultAllocator, DimMin, DimName, DimSub, U1};
+use nalgebra::allocator::Allocator;
 use std::ops::Mul;
 
 /// An error that is returned when asked to normalize independenty without scaling.
@@ -60,12 +61,15 @@ where
 
 impl<'a, D> ::Registration<D> for Registration<'a, D>
 where
-    D: DimName,
+    D: DimName + DimMin<D> + DimMin<D, Output = D> + DimSub<U1>,
     UInt: Mul<<D as DimName>::Value>,
-    <D as DimName>::Value: Mul + Mul<UInt>,
     <UInt as Mul<<D as DimName>::Value>>::Output: ArrayLength<f64>,
+    <D as DimName>::Value: Mul + Mul<UInt>,
     <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+    DefaultAllocator: Allocator<f64, D, D> +
+        Allocator<(usize, usize), D> +
+        Allocator<f64, <D as DimSub<U1>>::Output>,
 {
     type Transform = ::rigid::Transform<D>;
 
@@ -73,7 +77,8 @@ where
         let np = probabilities.pt1.iter().sum::<f64>();
         let mu_fixed = fixed.transpose() * &probabilities.pt1  / np;
         let mu_moving = moving.transpose() * &probabilities.p1  / np;
-        let _a = probabilities.px.transpose() * moving  - np * mu_fixed * mu_moving.transpose();
+        let a = probabilities.px.transpose() * moving  - np * &mu_fixed * mu_moving.transpose();
+        let svd = a.svd(true, true);
         unimplemented!()
     }
 }
