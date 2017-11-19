@@ -61,13 +61,19 @@ where
 impl<'a, D> ::Registration<D> for Registration<'a, D>
 where
     D: DimName,
+    UInt: Mul<<D as DimName>::Value>,
     <D as DimName>::Value: Mul + Mul<UInt>,
+    <UInt as Mul<<D as DimName>::Value>>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
 {
     type Transform = ::rigid::Transform<D>;
 
-    fn iterate(&mut self, _fixed: &Matrix<D>, _moving: &Matrix<D>, _probabilities: &Probabilities<D>) -> Iteration<D> {
+    fn iterate(&mut self, fixed: &Matrix<D>, moving: &Matrix<D>, probabilities: &Probabilities<D>) -> Iteration<D> {
+        let np = probabilities.pt1.iter().sum::<f64>();
+        let mu_fixed = fixed.transpose() * &probabilities.pt1  / np;
+        let mu_moving = moving.transpose() * &probabilities.p1  / np;
+        let _a = probabilities.px.transpose() * moving  - np * mu_fixed * mu_moving.transpose();
         unimplemented!()
     }
 }
