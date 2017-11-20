@@ -21,9 +21,9 @@ extern crate nalgebra;
 pub mod gauss_transform;
 pub mod normalize;
 pub mod rigid;
+pub mod runner;
 pub mod utils;
 mod registration;
-mod runner;
 
 pub use nalgebra::{U2, U3};
 pub use normalize::{Normalization, Normalize};

@@ -1,3 +1,5 @@
+//! Run cpd algorithms.
+
 use {Matrix, Normalize, Registration, Rigid, UInt};
 use failure::Error;
 use gauss_transform::Transformer;

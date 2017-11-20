@@ -84,6 +84,27 @@ impl Rigid {
         self
     }
 
+    /// Returns this rigid configuration as a registration.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::Rigid;
+    /// let rigid = Rigid::new();
+    /// let registration = rigid.as_registration().unwrap();
+    /// ```
+    pub fn as_registration<D>(
+        &self,
+    ) -> Result<Registration<D>, CannotNormalizeIndependentlyWithoutScale>
+    where
+        D: DimName,
+        <D as DimName>::Value: Mul + Mul<UInt>,
+        <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
+        <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+    {
+        Registration::new(self)
+    }
+
     /// Registers two matrices, returning the transform and information about the run.
     ///
     /// # Examples
@@ -111,7 +132,7 @@ impl Rigid {
             Allocator<(usize, usize), D> +
             Allocator<f64, <D as DimSub<U1>>::Output>,
     {
-        let registration = Registration::new(self)?;
+        let registration = self.as_registration()?;
         let tuple = self.runner.run(fixed, moving, registration)?;
         Ok(tuple)
     }
