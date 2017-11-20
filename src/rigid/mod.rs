@@ -166,26 +166,57 @@ impl From<Runner> for Rigid {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use {Normalize, SquareMatrix, Vector, utils};
-    use nalgebra::U2;
+    macro_rules! rigid {
+        ($name:ident, $normalize:expr, $scale:expr) => {
+            mod $name {
+                use Matrix;
+                use nalgebra::U2;
 
-    // TODO test for each normalization
-    #[test]
-    fn identity() {
-        let rigid = Runner::new()
-            .normalize(Normalize::Independent)
-            .rigid()
-            .scale(true);
-        let matrix = utils::matrix2_from_slice(&[1., 1., 1., 2., 1., 2., 3., 1.]);
-        let run = rigid.register(&matrix, &matrix).unwrap();
-        assert!(run.converged);
-        let transform = run.transform;
-        assert_relative_eq!(
-            SquareMatrix::<U2>::identity(),
-            transform.rotation,
-            epsilon = 1e-8
-        );
-        assert_relative_eq!(Vector::<U2>::zeros(), transform.translation, epsilon = 1e-8);
+                fn fixed() -> Matrix<U2> {
+                    ::utils::matrix2_from_slice(&[1., 1., 1., 2., 1., 2., 3., 1.])
+                }
+
+                fn moving() -> Matrix<U2> {
+                    let mut moving = fixed();
+                    if $scale {
+                        moving *= 2.;
+                    }
+                    moving
+                }
+
+                fn rigid(fixed: Matrix<U2>, moving: Matrix<U2>) {
+                    use {Runner, Normalize, SquareMatrix, Vector};
+
+                    let rigid = Runner::new()
+                        .normalize($normalize)
+                        .rigid()
+                        .scale($scale);
+                    let run = rigid.register(&fixed, &moving).unwrap();
+                    assert!(run.converged);
+                    assert_relative_eq!(fixed, run.moved, epsilon = 1e-4);
+
+                    let transform = run.transform;
+                    assert_relative_eq!(
+                        SquareMatrix::<U2>::identity(),
+                        transform.rotation,
+                        epsilon = 1e-8
+                        );
+                    assert_relative_eq!(Vector::<U2>::zeros(), transform.translation, epsilon = 1e-8);
+                }
+
+                #[test]
+                fn identity() {
+                    let fixed = fixed();
+                    let moving = moving();
+                    rigid(fixed, moving);
+                }
+            }
+        }
     }
+
+    rigid!(independent_and_scale, Normalize::Independent, true);
+    rigid!(same_scale_and_scale, Normalize::SameScale, true);
+    rigid!(same_scale_no_scale, Normalize::SameScale, false);
+    rigid!(none_and_scale, Normalize::None, true);
+    rigid!(none_no_scale, Normalize::None, false);
 }
