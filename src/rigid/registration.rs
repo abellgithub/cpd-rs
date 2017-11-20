@@ -3,6 +3,7 @@ use gauss_transform::Probabilities;
 use generic_array::ArrayLength;
 use nalgebra::{DefaultAllocator, DimMin, DimName, DimSub, U1};
 use nalgebra::allocator::Allocator;
+use rigid::Transform;
 use std::ops::Mul;
 
 /// An error that is returned when asked to normalize independenty without scaling.
@@ -121,6 +122,27 @@ where
         self.moved *= normalization.fixed.scale;
         for d in 0..D::dim() {
             self.moved.column_mut(d).add_scalar_mut(normalization.fixed.offset[d]);
+        }
+    }
+}
+
+impl<'a, D> From<Registration<'a, D>> for Transform<D>
+where
+    D: DimName,
+    <D as DimName>::Value: Mul + Mul<UInt>,
+    <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
+    <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+{
+    fn from(registration: Registration<D>) -> Transform<D> {
+        Transform {
+            moved: registration.moved,
+            rotation: registration.rotation,
+            scale: if registration.rigid.scale {
+                Some(registration.scale)
+            } else {
+                None
+            },
+            translation: registration.translation,
         }
     }
 }

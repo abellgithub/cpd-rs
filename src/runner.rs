@@ -123,7 +123,7 @@ impl Runner {
         mut registration: R,
     ) -> Result<(R::Transform, Run), Error>
     where
-        R: Registration<D>,
+        R: Registration<D> + Into<<R as Registration<D>>::Transform>,
         D: DimName,
         UInt: Mul<<D as DimName>::Value>,
         <D as DimName>::Value: Mul + Mul<UInt>,
@@ -155,7 +155,8 @@ impl Runner {
         if let Some(normalization) = normalization {
             registration.denormalize(&normalization);
         }
-        unimplemented!()
+        let run = Run { converged: iterations < self.max_iterations };
+        Ok((registration.into(), run))
     }
 }
 
