@@ -41,7 +41,7 @@ where
     /// use cpd::U2;
     /// use cpd::rigid::{Rigid, Registration};
     /// let rigid = Rigid::new();
-    /// let registration = Registration::<U2>::new(&rigid, &moving).unwrap();
+    /// let registration = Registration::<U2>::new(&rigid).unwrap();
     /// ```
     pub fn new(
         rigid: &'a Rigid,

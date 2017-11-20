@@ -136,7 +136,7 @@ impl Runner {
     /// let rigid = Rigid::new();
     /// let registration = rigid.as_registration::<U2>().unwrap();
     /// let matrix = utils::random_matrix2(10);
-    /// let (transform, run) = runner.run(&matrix, &matrix, registration);
+    /// let (transform, run) = runner.run(&matrix, &matrix, registration).unwrap();
     /// ```
     pub fn run<D, R>(
         &self,

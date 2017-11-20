@@ -89,9 +89,9 @@ impl Rigid {
     /// # Examples
     ///
     /// ```
-    /// use cpd::Rigid;
+    /// use cpd::{Rigid, U2};
     /// let rigid = Rigid::new();
-    /// let registration = rigid.as_registration().unwrap();
+    /// let registration = rigid.as_registration::<U2>().unwrap();
     /// ```
     pub fn as_registration<D>(
         &self,

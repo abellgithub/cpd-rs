@@ -22,11 +22,13 @@ where
     /// Rigid's registration implements `Registration`:
     ///
     /// ```
-    /// use cpd::{Rigid, utils, Probabilities};
+    /// use cpd::{Rigid, utils, Registration};
+    /// use cpd::gauss_transform::Transformer;
     /// let rigid = Rigid::new();
-    /// let registration = rigid.as_registration().unwrap();
+    /// let mut registration = rigid.as_registration().unwrap();
     /// let matrix = utils::random_matrix2(10);
-    /// let probabilities = Probabilities::new(&matrix, &matrix, 1.0, 0.1);
+    /// let transformer = Transformer::new(&matrix, 0.1).unwrap();
+    /// let probabilities = transformer.probabilities(&matrix, 1.0);
     /// let iteration = registration.iterate(&matrix, &matrix, &probabilities);
     /// ```
     fn iterate(
@@ -43,9 +45,9 @@ where
     /// Rigid's registration implements 'Registration':
     ///
     /// ```
-    /// use cpd::Rigid;
+    /// use cpd::{U2, Rigid, Registration, Normalization};
     /// let rigid = Rigid::new();
-    /// let registration = rigid.as_registration().unwrap();
+    /// let mut registration = rigid.as_registration::<U2>().unwrap();
     /// let normalization = Normalization::default();
     /// registration.denormalize(&normalization);
     /// ```

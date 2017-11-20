@@ -182,6 +182,20 @@ where
     }
 }
 
+impl<D> Default for Normalization<D>
+where
+    D: DimName,
+    <D as DimName>::Value: Mul + Mul<UInt>,
+    <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+{
+    fn default() -> Normalization<D> {
+        Normalization {
+            fixed: Parameters::default(),
+            moving: Parameters::default(),
+        }
+    }
+}
+
 impl<D> Parameters<D>
 where
     D: DimName,
