@@ -41,9 +41,12 @@ pub struct Runner {
 
 /// The result of a cpd run.
 #[derive(Clone, Copy, Debug)]
-pub struct Run {
+pub struct Run<T> {
     /// Did this run converge?
     pub converged: bool,
+
+    /// The transform returned by the registration method.
+    pub transform: T,
 }
 
 impl Runner {
@@ -123,14 +126,14 @@ impl Runner {
     /// let rigid = Rigid::new();
     /// let registration = rigid.as_registration::<U2>().unwrap();
     /// let matrix = utils::random_matrix2(10);
-    /// let (transform, run) = runner.run(&matrix, &matrix, registration).unwrap();
+    /// let run = runner.run(&matrix, &matrix, registration).unwrap();
     /// ```
     pub fn run<D, R>(
         &self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
         mut registration: R,
-    ) -> Result<(R::Transform, Run), Error>
+    ) -> Result<Run<R::Transform>, Error>
     where
         R: Registration<D> + Into<<R as Registration<D>>::Transform>,
         D: DimName,
@@ -166,8 +169,10 @@ impl Runner {
         if let Some(normalization) = normalization {
             registration.denormalize(&normalization);
         }
-        let run = Run { converged: iterations < self.max_iterations };
-        Ok((registration.into(), run))
+        Ok(Run {
+            converged: iterations < self.max_iterations,
+            transform: registration.into(),
+        })
     }
 }
 

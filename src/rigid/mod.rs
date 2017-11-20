@@ -21,7 +21,7 @@
 //! ```
 //! use cpd::{Rigid, utils};
 //! let matrix = utils::random_matrix2(10);
-//! let (transform, run) = Rigid::new().register(&matrix, &matrix).unwrap();
+//! let run = Rigid::new().register(&matrix, &matrix).unwrap();
 //! ```
 
 mod registration;
@@ -114,13 +114,13 @@ impl Rigid {
     /// let fixed = utils::random_matrix2(10);
     /// let moving = utils::random_matrix2(10);
     /// let rigid = Rigid::new();
-    /// let (transform, run) = rigid.register(&fixed, &moving).unwrap();
+    /// let run = rigid.register(&fixed, &moving).unwrap();
     /// ```
     pub fn register<D>(
         &self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
-    ) -> Result<(Transform<D>, Run), Error>
+    ) -> Result<Run<Transform<D>>, Error>
     where
         D: DimName + DimMin<D> + DimMin<D, Output = D> + DimSub<U1>,
         UInt: Mul<<D as DimName>::Value>,
@@ -161,8 +161,9 @@ mod tests {
             .rigid()
             .scale(true);
         let matrix = utils::matrix2_from_slice(&[1., 1., 1., 2., 1., 2., 3., 1.]);
-        let (transform, run) = rigid.register(&matrix, &matrix).unwrap();
+        let run = rigid.register(&matrix, &matrix).unwrap();
         assert!(run.converged);
+        let transform = run.transform;
         assert_relative_eq!(
             SquareMatrix::<U2>::identity(),
             transform.rotation,

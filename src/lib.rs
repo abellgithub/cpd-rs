@@ -7,8 +7,9 @@
 //! let rigid = Rigid::new();
 //! let fixed = utils::random_matrix2(10);
 //! let moving = utils::random_matrix2(10);
-//! let (transform, run) = rigid.register(&fixed, &moving).unwrap();
+//! let run = rigid.register(&fixed, &moving).unwrap();
 //! assert!(run.converged);
+//! let transform = run.transform;
 //! println!("{}", transform.rotation);
 //! println!("{}", transform.translation);
 //! ```
