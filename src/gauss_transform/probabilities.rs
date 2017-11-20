@@ -13,7 +13,7 @@ where
     /// A probability vector with the same length as the fixed points.
     pub pt1: DVector<f64>,
 
-    /// A probability matrix with the same lenth as the moving points.
+    /// A probability matrix with the same length as the moving points.
     pub px: Matrix<D>,
 
     /// The error between the two matrices.

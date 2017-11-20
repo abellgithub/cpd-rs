@@ -44,6 +44,7 @@ use std::ops::Mul;
 /// Build:
 ///
 /// ```
+/// use cpd::Rigid;
 /// let rigid = Rigid::new().scale(true);
 /// ```
 ///
