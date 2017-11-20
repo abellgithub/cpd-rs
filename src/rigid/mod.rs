@@ -37,7 +37,23 @@ use nalgebra::{DefaultAllocator, DimMin, DimName, DimSub, U1};
 use nalgebra::allocator::Allocator;
 use std::ops::Mul;
 
-/// The builder for rigid registrations.
+/// Build and run rigid registrations.
+///
+/// # Examples
+///
+/// Build:
+///
+/// ```
+/// let rigid = Rigid::new().scale(true);
+/// ```
+///
+/// And run:
+///
+/// ```
+/// use cpd::{Rigid, utils};
+/// let matrix = utils::random_matrix2(10);
+/// let run = Rigid::new().register(&matrix, &matrix).unwrap();
+/// ```
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rigid {
     allow_reflections: bool,

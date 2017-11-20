@@ -26,7 +26,7 @@ pub enum Normalize {
 
     /// Normalize both points sets with the same scale value.
     ///
-    /// Useful for LiDAR data, where you might want to reduce the coordiante values but you don't
+    /// Useful for LiDAR data, where you might want to reduce the coordinate values but you don't
     /// want to scale the points.
     SameScale,
 
@@ -34,7 +34,8 @@ pub enum Normalize {
     None,
 }
 
-/// The parameters that can be used to de-normalize points.
+/// Parameters for the fixed and moving matrices that were used to normalize, and can be used to
+/// denormalize.
 #[derive(Debug, PartialEq)]
 pub struct Normalization<D>
 where
