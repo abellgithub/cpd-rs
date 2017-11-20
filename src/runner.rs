@@ -192,7 +192,7 @@ impl Runner {
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
-        let (fixed, moving, normalization) = self.normalize.normalize(fixed, moving);
+        let (fixed, mut moving, normalization) = self.normalize.normalize(fixed, moving);
         let mut error = 0.;
         let mut error_change = f64::MAX;
         let mut iterations = 0;
@@ -217,6 +217,7 @@ impl Runner {
         }
         if let Some(normalization) = normalization {
             registration.denormalize(&normalization);
+            normalization.moving.denormalize(moving.to_mut());
         }
         moved = registration.transform(&moving);
         Ok(Run {
