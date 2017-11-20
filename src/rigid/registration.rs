@@ -1,5 +1,4 @@
-use super::Rigid;
-use {Iteration, Matrix, SquareMatrix, UInt, Vector};
+use {Matrix, Normalization, Rigid, SquareMatrix, UInt, Vector};
 use gauss_transform::Probabilities;
 use generic_array::ArrayLength;
 use nalgebra::{DefaultAllocator, DimMin, DimName, DimSub, U1};
@@ -20,6 +19,7 @@ where
     <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
 {
+    moved: Matrix<D>,
     rigid: &'a Rigid,
     rotation: SquareMatrix<D>,
     scale: f64,
@@ -41,15 +41,17 @@ where
     /// use cpd::U2;
     /// use cpd::rigid::{Rigid, Registration};
     /// let rigid = Rigid::new();
-    /// let registration = Registration::<U2>::new(&rigid).unwrap();
+    /// let registration = Registration::<U2>::new(&rigid, &moving).unwrap();
     /// ```
     pub fn new(
         rigid: &'a Rigid,
+        moving: &Matrix<D>,
     ) -> Result<Registration<'a, D>, CannotNormalizeIndependentlyWithoutScale> {
         if rigid.runner.requires_scaling() && !rigid.scale {
             Err(CannotNormalizeIndependentlyWithoutScale {})
         } else {
             Ok(Registration {
+                moved: moving.clone(),
                 rigid: rigid,
                 rotation: SquareMatrix::<D>::identity(),
                 scale: 1.0,
@@ -73,7 +75,11 @@ where
 {
     type Transform = ::rigid::Transform<D>;
 
-    fn iterate(&mut self, fixed: &Matrix<D>, moving: &Matrix<D>, probabilities: &Probabilities<D>) -> Iteration<D> {
+    fn moved(&self) -> &Matrix<D> {
+        &self.moved
+    }
+
+    fn iterate(&mut self, fixed: &Matrix<D>, moving: &Matrix<D>, probabilities: &Probabilities<D>) -> f64 {
         let np = probabilities.pt1.iter().sum::<f64>();
         let mu_fixed = fixed.transpose() * &probabilities.pt1  / np;
         let mu_moving = moving.transpose() * &probabilities.p1  / np;
@@ -102,13 +108,19 @@ where
         };
 // TODO this can be factored out
         self.translation = mu_fixed - self.scale * &self.rotation * mu_moving;
-        let mut moved = self.scale * moving * self.rotation.transpose();
+        self.moved = self.scale * moving * self.rotation.transpose();
         for d in 0..D::dim() {
-            moved.column_mut(d).add_scalar_mut(self.translation[d]);
+            self.moved.column_mut(d).add_scalar_mut(self.translation[d]);
         }
-        Iteration {
-            moved: moved,
-            sigma2: sigma2,
+        sigma2
+    }
+
+    fn denormalize(&mut self, normalization: &Normalization<D>) {
+        self.scale *= normalization.fixed.scale / normalization.moving.scale;
+        self.translation = normalization.fixed.scale * &self.translation + &normalization.fixed.offset - self.scale * &self.rotation * &normalization.moving.offset;
+        self.moved *= normalization.fixed.scale;
+        for d in 0..D::dim() {
+            self.moved.column_mut(d).add_scalar_mut(normalization.fixed.offset[d]);
         }
     }
 }
@@ -116,7 +128,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use {Normalize, Runner};
+    use {Matrix, Normalize, Runner};
     use nalgebra::U2;
 
     #[test]
@@ -125,6 +137,6 @@ mod tests {
             .normalize(Normalize::Independent)
             .rigid()
             .scale(false);
-        assert!(Registration::<U2>::new(&rigid).is_err());
+        assert!(Registration::new(&rigid, &Matrix::<U2>::zeros(1)).is_err());
     }
 }

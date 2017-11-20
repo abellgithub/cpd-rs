@@ -1,4 +1,4 @@
-use {Iteration, Matrix, Normalize, Registration, Rigid, Run, UInt};
+use {Matrix, Normalize, Registration, Rigid, Run, UInt};
 use failure::Error;
 use gauss_transform::Transformer;
 use generic_array::ArrayLength;
@@ -131,29 +131,29 @@ impl Runner {
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
     {
-        let (_fixed, _moving, _normalization) = self.normalize.normalize(fixed, moving);
+        let (fixed, moving, normalization) = self.normalize.normalize(fixed, moving);
         let mut error = 0.;
         let mut error_change = f64::MAX;
         let mut iterations = 0;
-        let mut iteration = Iteration {
-            moved: moving.clone(),
-            sigma2: self.sigma2.unwrap_or(sigma2(&fixed, &moving)),
-        };
+        let mut sigma2 = self.sigma2.unwrap_or(sigma2(&fixed, &moving));
         let transformer = Transformer::new(&fixed, self.outlier_weight)?;
         while iterations < self.max_iterations && self.error_change_threshold < error_change &&
-            self.sigma2_threshold < iteration.sigma2
+            self.sigma2_threshold < sigma2
         {
-            let probabilities = transformer.probabilities(&iteration.moved, iteration.sigma2);
+            let probabilities = transformer.probabilities(registration.moved(), sigma2);
             error_change = ((probabilities.error - error) / probabilities.error).abs();
             info!(
                 "iterations={}, error_change={}, sigma2={}",
                 iterations,
                 error_change,
-                iteration.sigma2
+                sigma2
             );
             error = probabilities.error;
-            iteration = registration.iterate(&fixed, &moving, &probabilities);
+            sigma2 = registration.iterate(&fixed, &moving, &probabilities);
             iterations += 1;
+        }
+        if let Some(normalization) = normalization {
+            registration.denormalize(&normalization);
         }
         unimplemented!()
     }

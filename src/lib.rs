@@ -22,14 +22,12 @@ pub mod gauss_transform;
 pub mod normalize;
 pub mod rigid;
 pub mod utils;
-mod iteration;
 mod registration;
 mod run;
 mod runner;
 
-pub use iteration::Iteration;
 pub use nalgebra::{U2, U3};
-pub use normalize::Normalize;
+pub use normalize::{Normalization, Normalize};
 pub use registration::Registration;
 pub use rigid::Rigid;
 pub use run::Run;
