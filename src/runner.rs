@@ -40,10 +40,16 @@ pub struct Runner {
 }
 
 /// The result of a cpd run.
-#[derive(Clone, Copy, Debug)]
-pub struct Run<T> {
+#[derive(Debug)]
+pub struct Run<D, T>
+where
+    D: DimName,
+{
     /// Did this run converge?
     pub converged: bool,
+
+    /// The moved points.
+    pub moved: Matrix<D>,
 
     /// The transform returned by the registration method.
     pub transform: T,
@@ -133,7 +139,7 @@ impl Runner {
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
         mut registration: R,
-    ) -> Result<Run<R::Transform>, Error>
+    ) -> Result<Run<D, R::Transform>, Error>
     where
         R: Registration<D> + Into<<R as Registration<D>>::Transform>,
         D: DimName,
@@ -169,8 +175,10 @@ impl Runner {
         if let Some(normalization) = normalization {
             registration.denormalize(&normalization);
         }
+        moved = registration.transform(&moving);
         Ok(Run {
             converged: iterations < self.max_iterations,
+            moved: moved,
             transform: registration.into(),
         })
     }

@@ -120,7 +120,7 @@ impl Rigid {
         &self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
-    ) -> Result<Run<Transform<D>>, Error>
+    ) -> Result<Run<D, Transform<D>>, Error>
     where
         D: DimName + DimMin<D> + DimMin<D, Output = D> + DimSub<U1>,
         UInt: Mul<<D as DimName>::Value>,
