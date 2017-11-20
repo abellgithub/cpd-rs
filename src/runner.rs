@@ -1,4 +1,4 @@
-use {Matrix, Normalize, Registration, Rigid, Run, UInt};
+use {Matrix, Normalize, Registration, Rigid, UInt};
 use failure::Error;
 use gauss_transform::Transformer;
 use generic_array::ArrayLength;
@@ -48,6 +48,13 @@ where
 
     /// The sigma2 value calculted by the registration for this iteration.
     pub sigma2: f64,
+}
+
+/// The result of a cpd run.
+#[derive(Clone, Copy, Debug)]
+pub struct Run {
+    /// Did this run converge?
+    pub converged: bool,
 }
 
 impl Runner {

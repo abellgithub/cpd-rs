@@ -23,15 +23,13 @@ pub mod normalize;
 pub mod rigid;
 pub mod utils;
 mod registration;
-mod run;
 mod runner;
 
 pub use nalgebra::{U2, U3};
 pub use normalize::{Normalization, Normalize};
 pub use registration::Registration;
 pub use rigid::Rigid;
-pub use run::Run;
-pub use runner::{Iteration, Runner};
+pub use runner::{Iteration, Run, Runner};
 
 /// Our custom dynamic-row matrix type.
 pub type Matrix<D> = nalgebra::MatrixMN<f64, nalgebra::Dynamic, D>;
