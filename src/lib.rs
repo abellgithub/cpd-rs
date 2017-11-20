@@ -1,4 +1,27 @@
 //! Register two point sets with Coherent Point Drift (cpd).
+//!
+//! Use `Rigid` to run rigid cpd:
+//!
+//! ```
+//! use cpd::{Rigid, utils};
+//! let rigid = Rigid::new();
+//! let fixed = utils::random_matrix2(10);
+//! let moving = utils::random_matrix2(10);
+//! let (transform, run) = rigid.register(&fixed, &moving).unwrap();
+//! assert!(run.converged);
+//! println!("{}", transform.rotation);
+//! println!("{}", transform.translation);
+//! ```
+//!
+//! Configure cpd runs with a `Runner`, and configure rigid-specific parameters with `Rigid`:
+//!
+//! ```
+//! use cpd::Runner;
+//! let rigid = Runner::new()
+//!     .max_iterations(100)
+//!     .rigid()
+//!     .scale(true);
+//! ```
 
 #![deny(missing_docs,
         missing_debug_implementations, missing_copy_implementations,
