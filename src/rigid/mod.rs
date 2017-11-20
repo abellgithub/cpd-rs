@@ -84,31 +84,6 @@ impl Rigid {
         self
     }
 
-    /// Returns a registration object, which can be used with a `Runner` to run this registration.
-    ///
-    /// Returns an error if the registration cannot be created, e.g. if the normalization is
-    /// independent but scaling is disabled.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use cpd::{Rigid, U2};
-    /// let rigid = Rigid::new();
-    /// let registration = rigid.as_registration::<U2>().unwrap();
-    /// ```
-    pub fn as_registration<'a, D>(
-        &'a self,
-        moving: &Matrix<D>,
-    ) -> Result<Registration<'a, D>, CannotNormalizeIndependentlyWithoutScale>
-    where
-        D: DimName,
-        <D as DimName>::Value: Mul + Mul<UInt>,
-        <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
-        <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
-    {
-        Registration::new(self, moving)
-    }
-
     /// Registers two matrices, returning the transform and information about the run.
     ///
     /// # Examples
@@ -136,7 +111,7 @@ impl Rigid {
             Allocator<(usize, usize), D> +
             Allocator<f64, <D as DimSub<U1>>::Output>,
     {
-        let registration = self.as_registration(moving)?;
+        let registration = Registration::new(self, moving)?;
         let tuple = self.runner.run(fixed, moving, registration)?;
         Ok(tuple)
     }
