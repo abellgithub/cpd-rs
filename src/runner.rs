@@ -37,6 +37,19 @@ pub struct Runner {
     sigma2_threshold: f64,
 }
 
+/// The result of one iteration.
+#[derive(Debug)]
+pub struct Iteration<D>
+where
+    D: DimName,
+{
+    /// The moving points.
+    pub moved: Matrix<D>,
+
+    /// The sigma2 value calculted by the registration for this iteration.
+    pub sigma2: f64,
+}
+
 impl Runner {
     /// Creates a new, default runner.
     ///
@@ -135,21 +148,24 @@ impl Runner {
         let mut error = 0.;
         let mut error_change = f64::MAX;
         let mut iterations = 0;
-        let mut sigma2 = self.sigma2.unwrap_or(sigma2(&fixed, &moving));
+        let mut iteration = Iteration {
+            moved: moving.as_ref().clone(),
+            sigma2: self.sigma2.unwrap_or(sigma2(&fixed, &moving)),
+        };
         let transformer = Transformer::new(&fixed, self.outlier_weight)?;
         while iterations < self.max_iterations && self.error_change_threshold < error_change &&
-            self.sigma2_threshold < sigma2
+            self.sigma2_threshold < iteration.sigma2
         {
-            let probabilities = transformer.probabilities(registration.moved(), sigma2);
+            let probabilities = transformer.probabilities(&iteration.moved, iteration.sigma2);
             error_change = ((probabilities.error - error) / probabilities.error).abs();
             info!(
                 "iterations={}, error_change={}, sigma2={}",
                 iterations,
                 error_change,
-                sigma2
+                iteration.sigma2
             );
             error = probabilities.error;
-            sigma2 = registration.iterate(&fixed, &moving, &probabilities);
+            iteration = registration.iterate(&fixed, &moving, &probabilities);
             iterations += 1;
         }
         if let Some(normalization) = normalization {

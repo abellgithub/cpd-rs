@@ -31,7 +31,7 @@ pub use normalize::{Normalization, Normalize};
 pub use registration::Registration;
 pub use rigid::Rigid;
 pub use run::Run;
-pub use runner::Runner;
+pub use runner::{Iteration, Runner};
 
 /// Our custom dynamic-row matrix type.
 pub type Matrix<D> = nalgebra::MatrixMN<f64, nalgebra::Dynamic, D>;

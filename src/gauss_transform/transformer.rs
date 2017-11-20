@@ -128,17 +128,35 @@ mod tests {
 
     #[test]
     fn probabilities() {
-        let fixed = utils::matrix2_from_slice(&[1., 3.]);
-        let transformer = Transformer::new(&fixed, 0.1).unwrap();
-        let moving = utils::matrix2_from_slice(&[2., 5., 4., 6.]);
-        let probabilities = transformer.probabilities(&moving, 1.0);
-        assert_relative_eq!(dvector(&[0.2085, 0.]), probabilities.p1, epsilon = 1e-4);
-        assert_relative_eq!(dvector(&[0.2085]), probabilities.pt1, epsilon = 1e-4);
+        let matrix = utils::matrix2_from_slice(&[1., 1., 1., 2., 1., 2., 3., 1.]);
+        let transformer = Transformer::new(&matrix, 0.1).unwrap();
+        let probabilities = transformer.probabilities(&matrix, 1.0);
         assert_relative_eq!(
-            utils::matrix2_from_slice(&[0.2085, 0., 0.6256, 0.]),
+            dvector(&[0.7871, 0.8781, 0.6557, 0.7069]),
+            probabilities.p1,
+            epsilon = 1e-4
+        );
+        assert_relative_eq!(
+            dvector(&[0.7708, 0.7871, 0.7232, 0.7466]),
+            probabilities.pt1,
+            epsilon = 1e-4
+        );
+        assert_relative_eq!(
+            utils::matrix2_from_slice(
+                &[
+                    1.0072,
+                    1.0116,
+                    0.6855,
+                    1.0699,
+                    1.0793,
+                    1.6640,
+                    1.6337,
+                    0.8841,
+                ],
+            ),
             probabilities.px,
             epsilon = 1e-4
         );
-        assert_relative_eq!(-0.5677, probabilities.error, epsilon = 1e-4);
+        assert_relative_eq!(-4.2399, probabilities.error, epsilon = 1e-4);
     }
 }

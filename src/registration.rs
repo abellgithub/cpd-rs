@@ -1,4 +1,4 @@
-use {Matrix, Normalization, UInt};
+use {Iteration, Matrix, Normalization, UInt};
 use gauss_transform::Probabilities;
 use generic_array::ArrayLength;
 use nalgebra::DimName;
@@ -15,19 +15,6 @@ where
     /// rotation and translation matrices.
     type Transform;
 
-    /// Returns a reference to this registration moved-points matrix.
-    ///
-    /// # Examples
-    ///
-    /// Rigid's registration implements `Registration`:
-    ///
-    /// ```
-    /// use cpd::Rigid;
-    /// let rigid = Rigid::new();
-    /// let moved = rigid.moved();
-    /// ```
-    fn moved(&self) -> &Matrix<D>;
-
     /// Perform one iteration of the registration.
     ///
     /// # Examples
@@ -40,14 +27,14 @@ where
     /// let registration = rigid.as_registration().unwrap();
     /// let matrix = utils::random_matrix2(10);
     /// let probabilities = Probabilities::new(&matrix, &matrix, 1.0, 0.1);
-    /// let sigma2 = registration.iterate(&matrix, &matrix, &probabilities);
+    /// let iteration = registration.iterate(&matrix, &matrix, &probabilities);
     /// ```
     fn iterate(
         &mut self,
         fixed: &Matrix<D>,
         moving: &Matrix<D>,
         probabilities: &Probabilities<D>,
-    ) -> f64;
+    ) -> Iteration<D>;
 
     /// Denormalize the registration.
     ///
