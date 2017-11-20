@@ -3,10 +3,14 @@ name = "cpd"
 version = "0.1.0"
 authors = ["Pete Gadomski <pete.gadomski@gmail.com>"]
 
+[features]
+default = ["las"]
+
 [dependencies]
 failure = "0.1"
 failure_derive = "0.1"
 generic-array = "0.8"
+las = { git = "https://github.com/gadomski/las-rs", optional = true }
 log = "0.3"
 nalgebra = "0.13"
 

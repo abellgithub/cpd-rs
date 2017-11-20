@@ -61,6 +61,8 @@ extern crate failure;
 #[macro_use]
 extern crate failure_derive;
 extern crate generic_array;
+#[cfg(feature = "las")]
+extern crate las;
 #[macro_use]
 extern crate log;
 extern crate nalgebra;
