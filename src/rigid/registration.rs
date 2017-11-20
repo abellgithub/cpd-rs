@@ -83,7 +83,8 @@ where
         if !self.rigid.allow_reflections {
             c[(D::dim() - 1, D::dim() - 1)] = (svd.u.as_ref().unwrap() * svd.v_t.as_ref().unwrap()).determinant();
         }
-        self.rotation = svd.u.unwrap() * c * svd.v_t.unwrap();
+        self.rotation = svd.u.unwrap() * &c * svd.v_t.unwrap();
+        let trace = (SquareMatrix::<D>::from_diagonal(&svd.singular_values) * c).trace();
         let a = (0..D::dim()).map(|d| {
             fixed.column(d).iter().zip(probabilities.pt1.iter()).map(|(n, p)| n.powi(2) * p).sum::<f64>()
         }).sum::<f64>();
@@ -92,7 +93,6 @@ where
             moving.column(d).iter().zip(probabilities.p1.iter()).map(|(n, p)| n.powi(2) * p).sum::<f64>()
         }).sum::<f64>();
         let d = np * (mu_moving.transpose() * &mu_moving)[0];
-        let trace = (SquareMatrix::<D>::from_diagonal(&svd.singular_values) * c).trace();
         let denominator = np * D::dim() as f64;
         let sigma2 = if self.rigid.scale {
             self.scale = trace / (c - d);
@@ -100,7 +100,6 @@ where
         } else {
             ((a - b + c - d - 2. * trace) / denominator).abs()
         };
-// TODO this can be factored out
         self.translation = mu_fixed - self.scale * &self.rotation * mu_moving;
         let mut moved = self.scale * moving * self.rotation.transpose();
         for d in 0..D::dim() {

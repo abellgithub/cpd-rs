@@ -136,14 +136,17 @@ mod tests {
     #[test]
     fn identity() {
         let rigid = Runner::new()
-            .max_iterations(1)
             .normalize(Normalize::Independent)
             .rigid()
             .scale(true);
         let matrix = utils::matrix2_from_slice(&[1., 1., 1., 2., 1., 2., 3., 1.]);
         let (transform, run) = rigid.register(&matrix, &matrix).unwrap();
         assert!(run.converged);
-        assert_relative_eq!(SquareMatrix::<U2>::identity(), transform.rotation);
-        assert_relative_eq!(Vector::<U2>::zeros(), transform.translation);
+        assert_relative_eq!(
+            SquareMatrix::<U2>::identity(),
+            transform.rotation,
+            epsilon = 1e-8
+        );
+        assert_relative_eq!(Vector::<U2>::zeros(), transform.translation, epsilon = 1e-8);
     }
 }
