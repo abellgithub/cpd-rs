@@ -105,7 +105,7 @@ where
     }
 
     fn transform(&self, moving: &Matrix<D>) -> Matrix<D> {
-        let mut moved = self.scale * moving * &self.rotation;
+        let mut moved = self.scale * moving * self.rotation.transpose();
         for d in 0..D::dim() {
             moved.column_mut(d).add_scalar_mut(self.translation[d]);
         }

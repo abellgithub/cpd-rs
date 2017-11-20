@@ -169,9 +169,9 @@ mod tests {
     macro_rules! rigid {
         ($name:ident, $normalize:expr, $scale:expr) => {
             mod $name {
-                use Matrix;
+                use {Matrix, SquareMatrix, Vector};
                 use rigid::Transform;
-                use nalgebra::U2;
+                use nalgebra::{U2, Rotation2};
 
                 const SCALE: f64 = 2.0;
 
@@ -207,8 +207,6 @@ mod tests {
 
                 #[test]
                 fn identity() {
-                    use {SquareMatrix, Vector};
-
                     let fixed = fixed();
                     let moving = moving();
                     let transform = rigid(fixed, moving);
@@ -218,6 +216,37 @@ mod tests {
                         epsilon = 1e-8
                         );
                     assert_relative_eq!(Vector::<U2>::zeros(), transform.translation, epsilon = 1e-8);
+                }
+
+                #[test]
+                fn rotation() {
+                    let rotation = Rotation2::new(0.5);
+                    let fixed = fixed();
+                    let moving = moving() * rotation;
+                    let transform = rigid(fixed, moving);
+                    assert_relative_eq!(
+                        *rotation.matrix(),
+                        transform.rotation,
+                        epsilon = 1e-8
+                        );
+                    assert_relative_eq!(Vector::<U2>::zeros(), transform.translation, epsilon = 1e-8);
+                }
+
+                #[test]
+                fn translation() {
+                    let translation = Vector::<U2>::new(1., 2.);
+                    let fixed = fixed();
+                    let mut moving = moving();
+                    for d in 0..2 {
+                        moving.column_mut(d).add_scalar_mut(-translation[d] / if $scale { SCALE } else { 1. });
+                    }
+                    let transform = rigid(fixed, moving);
+                    assert_relative_eq!(
+                        SquareMatrix::<U2>::identity(),
+                        transform.rotation,
+                        epsilon = 1e-8
+                        );
+                    assert_relative_eq!(translation, transform.translation, epsilon = 1e-8);
                 }
             }
         }
