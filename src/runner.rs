@@ -68,6 +68,21 @@ impl Runner {
         Runner::default()
     }
 
+    /// Sets the error change threshold.
+    ///
+    /// Make this lower if you want to get more precise.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::Runner;
+    /// let runner = Runner::new().error_change_threshold(1e-8);
+    /// ```
+    pub fn error_change_threshold(mut self, error_change_threshold: f64) -> Runner {
+        self.error_change_threshold = error_change_threshold;
+        self
+    }
+
     /// Sets the maximum number of iterations when running cpd.
     ///
     /// # Examples
@@ -81,8 +96,6 @@ impl Runner {
         self
     }
 
-    // TODO add setters for outlier weight, sigma2, others
-
     /// Sets the normalization strategy.
     ///
     /// # Examples
@@ -93,6 +106,36 @@ impl Runner {
     /// ```
     pub fn normalize(mut self, normalize: Normalize) -> Runner {
         self.normalize = normalize;
+        self
+    }
+
+    /// Sets the outlier weight.
+    ///
+    /// Does *not* check to see whether it is a valid value, yet.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::Runner;
+    /// let runner = Runner::new().outlier_weight(0.2);
+    /// ```
+    pub fn outlier_weight(mut self, outlier_weight: f64) -> Runner {
+        self.outlier_weight = outlier_weight;
+        self
+    }
+
+    /// Sets the initial sigma2.
+    ///
+    /// If none, use the default sigma2 as calculated from the matrices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use cpd::Runner;
+    /// let runner = Runner::new().sigma2(1.1).sigma2(None);
+    /// ```
+    pub fn sigma2<T: Into<Option<f64>>>(mut self, sigma2: T) -> Runner {
+        self.sigma2 = sigma2.into();
         self
     }
 
