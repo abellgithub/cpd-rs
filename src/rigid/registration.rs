@@ -20,7 +20,6 @@ where
     <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
 {
-    moved: Matrix<D>,
     rigid: &'a Rigid,
     rotation: SquareMatrix<D>,
     scale: f64,
@@ -46,13 +45,11 @@ where
     /// ```
     pub fn new(
         rigid: &'a Rigid,
-        moving: &Matrix<D>,
     ) -> Result<Registration<'a, D>, CannotNormalizeIndependentlyWithoutScale> {
         if rigid.runner.requires_scaling() && !rigid.scale {
             Err(CannotNormalizeIndependentlyWithoutScale {})
         } else {
             Ok(Registration {
-                moved: moving.clone(),
                 rigid: rigid,
                 rotation: SquareMatrix::<D>::identity(),
                 scale: 1.0,
@@ -118,10 +115,6 @@ where
     fn denormalize(&mut self, normalization: &Normalization<D>) {
         self.scale *= normalization.fixed.scale / normalization.moving.scale;
         self.translation = normalization.fixed.scale * &self.translation + &normalization.fixed.offset - self.scale * &self.rotation * &normalization.moving.offset;
-        self.moved *= normalization.fixed.scale;
-        for d in 0..D::dim() {
-            self.moved.column_mut(d).add_scalar_mut(normalization.fixed.offset[d]);
-        }
     }
 }
 
@@ -134,7 +127,6 @@ where
 {
     fn from(registration: Registration<D>) -> Transform<D> {
         Transform {
-            moved: registration.moved,
             rotation: registration.rotation,
             scale: if registration.rigid.scale {
                 Some(registration.scale)
@@ -149,7 +141,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use {Matrix, Normalize, Runner};
+    use {Normalize, Runner};
     use nalgebra::U2;
 
     #[test]
@@ -158,6 +150,6 @@ mod tests {
             .normalize(Normalize::Independent)
             .rigid()
             .scale(false);
-        assert!(Registration::new(&rigid, &Matrix::<U2>::zeros(1)).is_err());
+        assert!(Registration::<U2>::new(&rigid).is_err());
     }
 }

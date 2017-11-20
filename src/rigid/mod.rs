@@ -111,7 +111,7 @@ impl Rigid {
             Allocator<(usize, usize), D> +
             Allocator<f64, <D as DimSub<U1>>::Output>,
     {
-        let registration = Registration::new(self, moving)?;
+        let registration = Registration::new(self)?;
         let tuple = self.runner.run(fixed, moving, registration)?;
         Ok(tuple)
     }

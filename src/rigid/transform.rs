@@ -1,4 +1,4 @@
-use {Matrix, SquareMatrix, UInt, Vector};
+use {SquareMatrix, UInt, Vector};
 use generic_array::ArrayLength;
 use nalgebra::DimName;
 use std::ops::Mul;
@@ -12,9 +12,6 @@ where
     <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
 {
-    /// The moved points.
-    pub moved: Matrix<D>,
-
     /// The rotation matrix.
     pub rotation: SquareMatrix<D>,
 
