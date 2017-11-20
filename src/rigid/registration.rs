@@ -1,4 +1,4 @@
-use {Iteration, Matrix, Normalization, Rigid, SquareMatrix, UInt, Vector};
+use {Matrix, Normalization, Rigid, SquareMatrix, UInt, Vector};
 use gauss_transform::Probabilities;
 use generic_array::ArrayLength;
 use nalgebra::{DefaultAllocator, DimMin, DimName, DimSub, U1};
@@ -73,7 +73,7 @@ where
 {
     type Transform = ::rigid::Transform<D>;
 
-    fn iterate(&mut self, fixed: &Matrix<D>, moving: &Matrix<D>, probabilities: &Probabilities<D>) -> Iteration<D> {
+    fn iterate(&mut self, fixed: &Matrix<D>, moving: &Matrix<D>, probabilities: &Probabilities<D>) -> f64 {
         let np = probabilities.pt1.iter().sum::<f64>();
         let mu_fixed = fixed.transpose() * &probabilities.pt1  / np;
         let mu_moving = moving.transpose() * &probabilities.p1  / np;
@@ -101,14 +101,15 @@ where
             ((a - b + c - d - 2. * trace) / denominator).abs()
         };
         self.translation = mu_fixed - self.scale * &self.rotation * mu_moving;
-        let mut moved = self.scale * moving * self.rotation.transpose();
+        sigma2
+    }
+
+    fn transform(&self, moving: &Matrix<D>) -> Matrix<D> {
+        let mut moved = self.scale * moving * &self.rotation;
         for d in 0..D::dim() {
             moved.column_mut(d).add_scalar_mut(self.translation[d]);
         }
-        Iteration {
-            moved: moved,
-            sigma2: sigma2,
-        }
+        moved
     }
 
     fn denormalize(&mut self, normalization: &Normalization<D>) {

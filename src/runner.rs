@@ -39,19 +39,6 @@ pub struct Runner {
     sigma2_threshold: f64,
 }
 
-/// The result of one iteration.
-#[derive(Debug)]
-pub struct Iteration<D>
-where
-    D: DimName,
-{
-    /// The moving points.
-    pub moved: Matrix<D>,
-
-    /// The sigma2 value calculted by the registration for this iteration.
-    pub sigma2: f64,
-}
-
 /// The result of a cpd run.
 #[derive(Clone, Copy, Debug)]
 pub struct Run {
@@ -157,24 +144,23 @@ impl Runner {
         let mut error = 0.;
         let mut error_change = f64::MAX;
         let mut iterations = 0;
-        let mut iteration = Iteration {
-            moved: moving.as_ref().clone(),
-            sigma2: self.sigma2.unwrap_or(sigma2(&fixed, &moving)),
-        };
+        let mut sigma2 = self.sigma2.unwrap_or(sigma2(&fixed, &moving));
+        let mut moved = moving.as_ref().clone();
         let transformer = Transformer::new(&fixed, self.outlier_weight)?;
         while iterations < self.max_iterations && self.error_change_threshold < error_change &&
-            self.sigma2_threshold < iteration.sigma2
+            self.sigma2_threshold < sigma2
         {
-            let probabilities = transformer.probabilities(&iteration.moved, iteration.sigma2);
+            let probabilities = transformer.probabilities(&moved, sigma2);
             error_change = ((probabilities.error - error) / probabilities.error).abs();
             info!(
                 "iterations={}, error_change={}, sigma2={}",
                 iterations,
                 error_change,
-                iteration.sigma2
+                sigma2
             );
             error = probabilities.error;
-            iteration = registration.iterate(&fixed, &moving, &probabilities);
+            sigma2 = registration.iterate(&fixed, &moving, &probabilities);
+            moved = registration.transform(&moving);
             iterations += 1;
         }
         if let Some(normalization) = normalization {

@@ -52,7 +52,7 @@ pub use nalgebra::{U2, U3};
 pub use normalize::{Normalization, Normalize};
 pub use registration::Registration;
 pub use rigid::Rigid;
-pub use runner::{Iteration, Run, Runner};
+pub use runner::{Run, Runner};
 
 /// Our custom dynamic-row matrix type.
 pub type Matrix<D> = nalgebra::MatrixMN<f64, nalgebra::Dynamic, D>;
