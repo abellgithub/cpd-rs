@@ -54,6 +54,7 @@
         unstable_features,
         unused_import_braces, unused_qualifications)]
 
+extern crate alga;
 #[cfg(test)]
 #[macro_use]
 extern crate approx;
