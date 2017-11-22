@@ -48,6 +48,9 @@ where
     /// Did this run converge?
     pub converged: bool,
 
+    /// The number of iterations.
+    pub iterations: usize,
+
     /// The moved points.
     pub moved: Matrix<D>,
 
@@ -222,6 +225,7 @@ impl Runner {
         moved = registration.transform(&moving);
         Ok(Run {
             converged: iterations < self.max_iterations,
+            iterations: iterations,
             moved: moved,
             transform: registration.into(),
         })
