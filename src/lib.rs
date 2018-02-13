@@ -9,7 +9,7 @@
 //! coherence theory.
 //! - affine (not yet implemented by cpd-rs): an affine matrix transformation.
 //!
-//! This is a pure-rust implementation of cpd, relyign on [nalgebra](http://nalgebra.org/) for the
+//! This is a pure-rust implementation of cpd, relying on [nalgebra](http://nalgebra.org/) for the
 //! linear algebra.
 //!
 //! # Architecture
