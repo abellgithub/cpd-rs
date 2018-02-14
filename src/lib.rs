@@ -5,39 +5,30 @@
 //! alignment between two point sets using one three algorithms:
 //!
 //! - rigid: rotation, translation, and possibly scaling
-//! - nonrigid (not yet implemented by cpd-rs): nonrigid transformation goverend by motion
+//! - nonrigid (not yet implemented in cpd-rs): nonrigid transformation goverend by motion
 //! coherence theory.
-//! - affine (not yet implemented by cpd-rs): an affine matrix transformation.
+//! - affine (not yet implemented in cpd-rs): an affine matrix transformation.
 //!
 //! This is a pure-rust implementation of cpd, relying on [nalgebra](http://nalgebra.org/) for the
 //! linear algebra.
 //!
 //! # Architecture
 //!
-//! The heavy lifting of cpd is done by [Runner::run](runner/struct.Runner.html#method.run), which
-//! takes as its inputs a fixed matrix, a moving matrix, and a
-//! [Registration](trait.Registration.html), and outputs information about the run such as whether
-//! the algorithm converged and transformation parateters. In order to configure the runner and the
-//! registration, builders are used. E.g., a runner builder:
+//! Some parts of a cpd run, e.g. the maximum number of iterations or the outlier weight, are
+//! common among all parts of cpd. Use a `Runner` to configure these common variables:
 //!
 //! ```
-//! let runner = cpd::Runner::new();
+//! let runner = cpd::Runner::new().max_iterations(10).outlier_weight(0.2);
 //! ```
 //!
-//! Converting a runner builder to a rigid builder:
+//! A `Runner` can be converted to, e.g., a `Rigid`:
 //!
 //! ```
 //! let rigid = cpd::Runner::new().rigid();
 //! ```
 //!
-//! Creating a rigid builder directly:
-//!
-//! ```
-//! let rigid = cpd::Rigid::new();
-//! ```
-//!
-//! And [Rigid::register](rigid/struct.Rigid.html#method.register) sets everything up and calls
-//! `Runner::run`:
+//! `Runner` implements `Default`, so if you're ok with the default run parameters, you can create,
+//! e.g., a `Rigid` directly:
 //!
 //! ```
 //! use cpd::{Rigid, utils};
