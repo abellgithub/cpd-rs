@@ -36,6 +36,9 @@ pub enum Normalize {
 
 /// Parameters for the fixed and moving matrices that were used to normalize, and can be used to
 /// denormalize.
+///
+/// Normalization is a scale and offset that are used to transform points to (roughly) a unit
+/// volume.
 #[derive(Debug, PartialEq)]
 pub struct Normalization<D>
 where
