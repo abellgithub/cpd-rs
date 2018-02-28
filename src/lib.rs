@@ -2,15 +2,19 @@
 //!
 //! Coherent Point Drifit is a point set registration algorithm created by [Andriy
 //! Myroneno](https://sites.google.com/site/myronenko/research/cpd). It calculates the best
-//! alignment between two point sets using one three algorithms:
+//! alignment between two point sets using one three algorithms. Some of these algorithms are
+//! currently implemented in **cpd-rs**, and some are not. This is a pure-rust implementation of
+//! cpd, relying on [nalgebra](http://nalgebra.org/) for the linear algebra.
 //!
+//!
+//! ## Implemented
 //! - rigid: rotation, translation, and possibly scaling
-//! - nonrigid (not yet implemented in cpd-rs): nonrigid transformation goverend by motion
-//! coherence theory.
-//! - affine (not yet implemented in cpd-rs): an affine matrix transformation.
 //!
-//! This is a pure-rust implementation of cpd, relying on [nalgebra](http://nalgebra.org/) for the
-//! linear algebra.
+//! ## Not implemented
+//!
+//! - nonrigid: nonrigid transformation goverend by motion
+//! coherence theory.
+//! - affine: an affine matrix transformation.
 //!
 //! # Architecture
 //!
