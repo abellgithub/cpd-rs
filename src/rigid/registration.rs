@@ -9,7 +9,7 @@ use std::ops::Mul;
 /// An error that is returned when asked to normalize independenty without scaling.
 #[derive(Clone, Copy, Debug, Fail)]
 #[fail(display = "Cannot use Normalize::Independent without rigid scaling")]
-pub struct CannotNormalizeIndependentlyWithoutScale {}
+pub struct CannotNormalizeIndependentlyWithoutScale;
 
 /// A `Registration` for running rigid registrations.
 #[derive(Debug)]
@@ -47,7 +47,7 @@ where
         rigid: &'a Rigid,
     ) -> Result<Registration<'a, D>, CannotNormalizeIndependentlyWithoutScale> {
         if rigid.runner.requires_scaling() && !rigid.scale {
-            Err(CannotNormalizeIndependentlyWithoutScale {})
+            Err(CannotNormalizeIndependentlyWithoutScale)
         } else {
             Ok(Registration {
                 rigid: rigid,
