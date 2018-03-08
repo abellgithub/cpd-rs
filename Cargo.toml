@@ -11,7 +11,7 @@ alga = "0.5"
 failure = "0.1"
 failure_derive = "0.1"
 generic-array = "0.8"
-las = { git = "https://github.com/gadomski/las-rs", optional = true }
+las = { version = "0.6", optional = true }
 log = "0.4"
 nalgebra = "0.14"
 
