@@ -128,7 +128,11 @@ impl Normalize {
         &self,
         fixed: &'a Matrix<D>,
         moving: &'a Matrix<D>,
-    ) -> (Cow<'a, Matrix<D>>, Cow<'a, Matrix<D>>, Option<Normalization<D>>)
+    ) -> (
+        Cow<'a, Matrix<D>>,
+        Cow<'a, Matrix<D>>,
+        Option<Normalization<D>>,
+    )
     where
         D: DimName,
         <D as DimName>::Value: Mul + Mul<UInt>,
@@ -218,9 +222,9 @@ where
     /// let parameters = Parameters::new(&matrix);
     /// ```
     pub fn new(matrix: &Matrix<D>) -> Parameters<D> {
-        let offset = Vector::<D>::from_iterator((0..D::dim()).map(|d| {
-            matrix.column(d).iter().sum::<f64>() / matrix.nrows() as f64
-        }));
+        let offset = Vector::<D>::from_iterator(
+            (0..D::dim()).map(|d| matrix.column(d).iter().sum::<f64>() / matrix.nrows() as f64),
+        );
         let mut matrix = matrix.clone();
         for d in 0..D::dim() {
             matrix.column_mut(d).add_scalar_mut(-offset[d]);
@@ -290,7 +294,7 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use {U2, Vector, utils};
+    use {utils, U2, Vector};
 
     #[test]
     fn parameters() {

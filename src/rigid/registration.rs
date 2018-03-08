@@ -67,31 +67,51 @@ where
     <D as DimName>::Value: Mul + Mul<UInt>,
     <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
-    DefaultAllocator: Allocator<f64, D, D> +
-        Allocator<(usize, usize), D> +
-        Allocator<f64, <D as DimSub<U1>>::Output>,
+    DefaultAllocator: Allocator<f64, D, D>
+        + Allocator<(usize, usize), D>
+        + Allocator<f64, <D as DimSub<U1>>::Output>,
 {
     type Transform = ::rigid::Transform<D>;
 
-    fn iterate(&mut self, fixed: &Matrix<D>, moving: &Matrix<D>, probabilities: &Probabilities<D>) -> f64 {
+    fn iterate(
+        &mut self,
+        fixed: &Matrix<D>,
+        moving: &Matrix<D>,
+        probabilities: &Probabilities<D>,
+    ) -> f64 {
         let np = probabilities.pt1.iter().sum::<f64>();
-        let mu_fixed = fixed.transpose() * &probabilities.pt1  / np;
-        let mu_moving = moving.transpose() * &probabilities.p1  / np;
-        let a = probabilities.px.transpose() * moving  - np * &mu_fixed * mu_moving.transpose();
+        let mu_fixed = fixed.transpose() * &probabilities.pt1 / np;
+        let mu_moving = moving.transpose() * &probabilities.p1 / np;
+        let a = probabilities.px.transpose() * moving - np * &mu_fixed * mu_moving.transpose();
         let svd = a.svd(true, true);
         let mut c = SquareMatrix::<D>::identity();
         if !self.rigid.allow_reflections {
-            c[(D::dim() - 1, D::dim() - 1)] = (svd.u.as_ref().unwrap() * svd.v_t.as_ref().unwrap()).determinant();
+            c[(D::dim() - 1, D::dim() - 1)] =
+                (svd.u.as_ref().unwrap() * svd.v_t.as_ref().unwrap()).determinant();
         }
         self.rotation = svd.u.unwrap() * &c * svd.v_t.unwrap();
         let trace = (SquareMatrix::<D>::from_diagonal(&svd.singular_values) * c).trace();
-        let a = (0..D::dim()).map(|d| {
-            fixed.column(d).iter().zip(probabilities.pt1.iter()).map(|(n, p)| n.powi(2) * p).sum::<f64>()
-        }).sum::<f64>();
+        let a = (0..D::dim())
+            .map(|d| {
+                fixed
+                    .column(d)
+                    .iter()
+                    .zip(probabilities.pt1.iter())
+                    .map(|(n, p)| n.powi(2) * p)
+                    .sum::<f64>()
+            })
+            .sum::<f64>();
         let b = np * (mu_fixed.transpose() * &mu_fixed)[0];
-        let c = (0..D::dim()).map(|d| {
-            moving.column(d).iter().zip(probabilities.p1.iter()).map(|(n, p)| n.powi(2) * p).sum::<f64>()
-        }).sum::<f64>();
+        let c = (0..D::dim())
+            .map(|d| {
+                moving
+                    .column(d)
+                    .iter()
+                    .zip(probabilities.p1.iter())
+                    .map(|(n, p)| n.powi(2) * p)
+                    .sum::<f64>()
+            })
+            .sum::<f64>();
         let d = np * (mu_moving.transpose() * &mu_moving)[0];
         let denominator = np * D::dim() as f64;
         let sigma2 = if self.rigid.scale {
@@ -114,7 +134,9 @@ where
 
     fn denormalize(&mut self, normalization: &Normalization<D>) {
         self.scale *= normalization.fixed.scale / normalization.moving.scale;
-        self.translation = normalization.fixed.scale * &self.translation + &normalization.fixed.offset - self.scale * &self.rotation * &normalization.moving.offset;
+        self.translation = normalization.fixed.scale * &self.translation
+            + &normalization.fixed.offset
+            - self.scale * &self.rotation * &normalization.moving.offset;
     }
 }
 

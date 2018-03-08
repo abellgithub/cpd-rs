@@ -62,9 +62,9 @@ where
         let fixed_nrows = self.fixed.nrows() as f64;
         let moving_nrows = moving.nrows() as f64;
         let ksig = -2.0 * sigma2;
-        let outliers = (self.outlier_weight * moving_nrows *
-                            (-ksig * PI).powf(0.5 * D::dim() as f64)) /
-            ((1. - self.outlier_weight) * fixed_nrows);
+        let outliers = (self.outlier_weight * moving_nrows
+            * (-ksig * PI).powf(0.5 * D::dim() as f64))
+            / ((1. - self.outlier_weight) * fixed_nrows);
 
         let mut p = DVector::<f64>::zeros(moving.nrows());
         let mut p1 = DVector::<f64>::zeros(moving.nrows());
@@ -142,18 +142,9 @@ mod tests {
             epsilon = 1e-4
         );
         assert_relative_eq!(
-            utils::matrix2_from_slice(
-                &[
-                    1.0072,
-                    1.0116,
-                    0.6855,
-                    1.0699,
-                    1.0793,
-                    1.6640,
-                    1.6337,
-                    0.8841,
-                ],
-            ),
+            utils::matrix2_from_slice(&[
+                1.0072, 1.0116, 0.6855, 1.0699, 1.0793, 1.6640, 1.6337, 0.8841,
+            ],),
             probabilities.px,
             epsilon = 1e-4
         );

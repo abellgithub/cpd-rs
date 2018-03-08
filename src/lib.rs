@@ -42,12 +42,9 @@
 //! let run = rigid.register(&fixed, &moving).unwrap();
 //! ```
 
-#![deny(missing_docs,
-        missing_debug_implementations, missing_copy_implementations,
-        trivial_casts, trivial_numeric_casts,
-        unsafe_code,
-        unstable_features,
-        unused_import_braces, unused_qualifications)]
+#![deny(missing_docs, missing_debug_implementations, missing_copy_implementations, trivial_casts,
+        trivial_numeric_casts, unsafe_code, unstable_features, unused_import_braces,
+        unused_qualifications)]
 
 extern crate alga;
 #[cfg(test)]
@@ -89,7 +86,5 @@ pub type Vector<D> = nalgebra::VectorN<f64, D>;
 pub type RowVector<D> = nalgebra::RowVectorN<f64, D>;
 
 /// Our UInt, used for matrix indexing.
-pub type UInt = generic_array::typenum::UInt<
-    generic_array::typenum::UTerm,
-    generic_array::typenum::B1,
->;
+pub type UInt =
+    generic_array::typenum::UInt<generic_array::typenum::UTerm, generic_array::typenum::B1>;

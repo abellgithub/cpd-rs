@@ -145,9 +145,9 @@ impl Rigid {
         <D as DimName>::Value: Mul + Mul<UInt>,
         <<D as DimName>::Value as Mul>::Output: ArrayLength<f64>,
         <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
-        DefaultAllocator: Allocator<f64, D, D> +
-            Allocator<(usize, usize), D> +
-            Allocator<f64, <D as DimSub<U1>>::Output>,
+        DefaultAllocator: Allocator<f64, D, D>
+            + Allocator<(usize, usize), D>
+            + Allocator<f64, <D as DimSub<U1>>::Output>,
     {
         let registration = self.as_registration()?;
         let tuple = self.runner.run(fixed, moving, registration)?;

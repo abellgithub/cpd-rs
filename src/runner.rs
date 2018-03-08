@@ -202,16 +202,14 @@ impl Runner {
         let mut sigma2 = self.sigma2.unwrap_or(sigma2(&fixed, &moving));
         let mut moved = moving.as_ref().clone();
         let transformer = Transformer::new(&fixed, self.outlier_weight)?;
-        while iterations < self.max_iterations && self.error_change_threshold < error_change &&
-            self.sigma2_threshold < sigma2
+        while iterations < self.max_iterations && self.error_change_threshold < error_change
+            && self.sigma2_threshold < sigma2
         {
             let probabilities = transformer.probabilities(&moved, sigma2);
             error_change = ((probabilities.error - error) / probabilities.error).abs();
             info!(
                 "iterations={}, error_change={}, sigma2={}",
-                iterations,
-                error_change,
-                sigma2
+                iterations, error_change, sigma2
             );
             error = probabilities.error;
             sigma2 = registration.iterate(&fixed, &moving, &probabilities);
@@ -267,9 +265,9 @@ where
     let sum = |matrix: &Matrix<D>| {
         RowVector::<D>::from_iterator((0..D::dim()).map(|d| matrix.column(d).iter().sum::<f64>()))
     };
-    let numerator = fixed.nrows() as f64 * (fixed.transpose() * fixed).trace() +
-        moving.nrows() as f64 * (moving.transpose() * moving).trace() -
-        2. * (sum(fixed) * sum(moving).transpose())[0];
+    let numerator = fixed.nrows() as f64 * (fixed.transpose() * fixed).trace()
+        + moving.nrows() as f64 * (moving.transpose() * moving).trace()
+        - 2. * (sum(fixed) * sum(moving).transpose())[0];
     let denomintaor = (fixed.nrows() * moving.nrows() * D::dim()) as f64;
     numerator / denomintaor
 }
