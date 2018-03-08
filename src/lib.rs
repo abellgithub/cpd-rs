@@ -1,38 +1,38 @@
-//! Register two point sets with Coherent Point Drift (cpd).
+//! Registers two point sets with Coherent Point Drift (cpd).
 //!
 //! Coherent Point Drifit is a point set registration algorithm created by [Andriy
 //! Myroneno](https://sites.google.com/site/myronenko/research/cpd). It calculates the best
-//! alignment between two point sets using one three algorithms. Some of these algorithms are
+//! alignment between two point sets using one of three algorithms. Some of these algorithms are
 //! currently implemented in **cpd-rs**, and some are not. This is a pure-rust implementation of
 //! cpd, relying on [nalgebra](http://nalgebra.org/) for the linear algebra.
 //!
 //!
 //! ## Implemented
-//! - rigid: rotation, translation, and possibly scaling
+//!
+//! - **rigid**: rotation, translation, and optional scaling
 //!
 //! ## Not implemented
 //!
-//! - nonrigid: nonrigid transformation goverend by motion
+//! - **nonrigid**: nonrigid transformation goverend by motion
 //! coherence theory.
-//! - affine: an affine matrix transformation.
+//! - **affine**: an affine matrix transformation.
 //!
 //! # Architecture
 //!
 //! Some parts of a cpd run, e.g. the maximum number of iterations or the outlier weight, are
-//! common among all parts of cpd. Use a `Runner` to configure these common variables:
+//! common among all flavors of cpd. Use a `Runner` to configure these common variables:
 //!
 //! ```
 //! let runner = cpd::Runner::new().max_iterations(10).outlier_weight(0.2);
 //! ```
 //!
-//! A `Runner` can be converted to, e.g., a `Rigid`:
+//! A `Runner` can be converted to a `Rigid` (for example), which is itself a builder:
 //!
 //! ```
-//! let rigid = cpd::Runner::new().rigid();
+//! let rigid = cpd::Runner::new().rigid().allow_reflections(false);
 //! ```
 //!
-//! `Runner` implements `Default`, so if you're ok with the default run parameters, you can create,
-//! e.g., a `Rigid` directly:
+//! `Rigid` can be used to run the registration on two matrices:
 //!
 //! ```
 //! use cpd::{Rigid, utils};
