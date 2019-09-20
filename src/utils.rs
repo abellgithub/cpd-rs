@@ -14,7 +14,6 @@ use nalgebra::U2;
 /// assert_eq!(10, matrix.nrows());
 /// ```
 pub fn random_matrix2(nrows: usize) -> Matrix<U2> {
-    use nalgebra::U2;
     Matrix::<U2>::new_random(nrows)
 }
 

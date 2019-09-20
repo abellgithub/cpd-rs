@@ -34,17 +34,20 @@ pub enum Normalize {
     None,
 }
 
-/// Parameters for the fixed and moving matrices that were used to normalize, and can be used to
+/// Parameters for the fixed and moving matrices that were used to
+/// normalize, and can be used to
 /// denormalize.
 ///
 /// Normalization is a scale and offset that are used to transform points to (roughly) a unit
 /// volume.
 #[derive(Debug, PartialEq)]
-pub struct Normalization<D>
+pub struct Normalization<D: DimName>
+/**
 where
     D: DimName,
     <D as DimName>::Value: Mul + Mul<UInt>,
     <<D as DimName>::Value as Mul<UInt>>::Output: ArrayLength<f64>,
+**/
 {
     /// The normalization parameters for the fixed points.
     pub fixed: Parameters<D>,
